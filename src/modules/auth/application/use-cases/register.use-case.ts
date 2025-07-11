@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { UserRepository } from "src/modules/users/domain/repository/user.repository";
-import { RegisterInputDTO } from "../dtos/RegisterInputDTO";
+import { RegisterInputDTO } from "../../adapters/dtos/register-input/register-input.dto";
 import { User } from "src/modules/users/domain/entity/user.entity";
 import * as bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";

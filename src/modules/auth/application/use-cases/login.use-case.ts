@@ -5,11 +5,13 @@ import { RegisterInputDTO } from "../../adapters/dtos/register-input/register-in
 import { AuthPayload } from "../../adapters/dtos/auth-payload/auth-payload";
 import * as bcrypt from "bcryptjs";
 import { LoginInputDTO } from "../../adapters/dtos/login-input/login-input.dto";
+import { PasswordHashService } from "../services/password-hash.service";
 
 @Injectable()
 export class LoginUseCase {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly passwordHashService: PasswordHashService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -18,7 +20,7 @@ export class LoginUseCase {
     if (!user) {
       throw new Error("User not found");
     }
-    const isValid = await bcrypt.compare(input.password, user.password);
+    const isValid = await this.passwordHashService.compare(input.password, user.password);
     if (!isValid) throw new Error("invalid credentials");
 
     const payload = { sub: user.id, username: user.username };
