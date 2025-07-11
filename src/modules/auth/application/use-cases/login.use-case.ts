@@ -1,0 +1,29 @@
+import { Injectable } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { UserRepository } from "src/modules/users/domain/repository/user.repository";
+import { RegisterInputDTO } from "../../adapters/dtos/register-input/register-input.dto";
+import { AuthPayload } from "../../adapters/dtos/auth-payload/auth-payload";
+import * as bcrypt from "bcryptjs";
+
+@Injectable()
+export class LoginUseCase {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async execute(input: RegisterInputDTO): Promise<AuthPayload> {
+    const user = await this.userRepository.findByUsername(input.username);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const isValid = await bcrypt.compare(input.password, user.password);
+    if (!isValid) throw new Error("invalid credentials");
+
+    const payload = { sub: user.id, username: user.username };
+    return {
+      token: this.jwtService.sign(payload),
+      user
+    };
+  }
+}

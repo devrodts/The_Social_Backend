@@ -1,0 +1,47 @@
+graph TD
+    A[Cliente GraphQL] --> B[AuthResolver]
+    B --> C{Operação}
+    
+    C -->|Register| D[RegisterUseCase]
+    C -->|Login| E[LoginUseCase]
+    
+    D --> F[Validação DTOs]
+    E --> F
+    
+    F --> G{Validação}
+    G -->|Falha| H[ValidationException]
+    G -->|Sucesso| I[UserRepository]
+    
+    I --> J[InMemoryUserRepository]
+    
+    D --> K[Verificar Duplicatas]
+    K --> L{Username/Email Existe?}
+    L -->|Sim| M[UserAlreadyExistsException]
+    L -->|Não| N[Hash Password]
+    
+    N --> O[Criar User Entity]
+    O --> P[Salvar no Repository]
+    P --> Q[Gerar JWT Token]
+    Q --> R[AuthPayload]
+    
+    E --> S[Buscar User por Username]
+    S --> T{User Existe?}
+    T -->|Não| U[InvalidCredentialsException]
+    T -->|Sim| V[Verificar Password]
+    
+    V --> W{Password Válida?}
+    W -->|Não| U
+    W -->|Sim| Q
+    
+    R --> X[Response GraphQL]
+    H --> X
+    M --> X
+    U --> X
+    
+    Y[Protected Route] --> Z[GqlAuthGuard]
+    Z --> AA[JwtStrategy]
+    AA --> BB{Token Válido?}
+    BB -->|Não| CC[UnauthorizedException]
+    BB -->|Sim| DD[UserPayload]
+    DD --> EE[CurrentUser Decorator]
+    EE --> FF[Route Handler]
