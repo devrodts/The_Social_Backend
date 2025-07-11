@@ -33,18 +33,16 @@ export class AuthResolver {
   
   @Mutation(() => AuthPayload)
   async login(@Args("input") input: LoginInputDTO): Promise<AuthPayload> {
-    const user = await this.userRepository.findByUsername(input.username);
+    const authPayload = await this.loginUseCase.execute(input);
 
-    if(!user){
-      throw new Error("User not found");
+    if(!authPayload){
+      throw new Error("invalid credentials");
     }
-    
-    const isValid = await bcrypt.compare(input.password, user.password);
-    if(!isValid) throw new Error("invalid credentials");
-    const payload = { sub: user.id, username: user.username };
-    return {
+
+    const payload = { sub: authPayload.user.id, username: authPayload.user.username };
+    return {  
       token: this.jwtService.sign(payload),
-      user,
+      user: authPayload.user,
     };
   }
 }

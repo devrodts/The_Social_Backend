@@ -4,6 +4,7 @@ import { UserRepository } from "src/modules/users/domain/repository/user.reposit
 import { RegisterInputDTO } from "../../adapters/dtos/register-input/register-input.dto";
 import { AuthPayload } from "../../adapters/dtos/auth-payload/auth-payload";
 import * as bcrypt from "bcryptjs";
+import { LoginInputDTO } from "../../adapters/dtos/login-input/login-input.dto";
 
 @Injectable()
 export class LoginUseCase {
@@ -12,7 +13,7 @@ export class LoginUseCase {
     private readonly jwtService: JwtService,
   ) {}
 
-  async execute(input: RegisterInputDTO): Promise<AuthPayload> {
+  async execute(input: LoginInputDTO): Promise<AuthPayload> {
     const user = await this.userRepository.findByUsername(input.username);
     if (!user) {
       throw new Error("User not found");
