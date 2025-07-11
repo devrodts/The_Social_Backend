@@ -3,6 +3,7 @@ import { UserRepository } from "src/modules/users/domain/repository/user.reposit
 import { RegisterInputDTO } from "../dtos/RegisterInputDTO";
 import { User } from "src/modules/users/domain/entity/user.entity";
 import * as bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class RegisterUseCase {
@@ -24,16 +25,12 @@ export class RegisterUseCase {
     const hashedPassword = await bcrypt.hash(input.password, 10);
 
     const newUser = new User(
-      this.generateId(),
+      randomUUID(),
       input.username,
       input.email,
       hashedPassword,
       input.displayName,
     );
     return this.userRepository.save(newUser);
-  }
-
-  private generateId(): string {
-    return `user_${Date.now()}`;
   }
 }

@@ -4,7 +4,6 @@ import { LoginUseCase } from "src/modules/auth/application/use-cases/login.use-c
 import { RegisterInputDTO } from "src/modules/auth/adapters/dtos/register-input/register-input.dto";
 import { AuthPayload } from "src/modules/auth/adapters/dtos/auth-payload/auth-payload";
 import { LoginInputDTO } from "../../dtos/login-input/login-input.dto";
-import { UserRepository } from "src/modules/users/domain/repository/user.repository";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
 
@@ -13,7 +12,6 @@ export class AuthResolver {
   constructor(
     private readonly registerUseCase: RegisterUseCase,
     private readonly loginUseCase: LoginUseCase,
-    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
 
