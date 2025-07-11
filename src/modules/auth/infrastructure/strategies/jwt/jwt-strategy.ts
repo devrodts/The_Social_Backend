@@ -8,7 +8,7 @@ import { UserPayload } from "src/modules/auth/domain/value-objects/user-payload"
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get("JWT_SECRET"),
     });
@@ -16,5 +16,5 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any): Promise<UserPayload> {
     return new UserPayload(payload.sub, payload.username);
-  }    
+  }
 }

@@ -9,7 +9,9 @@ export class RegisterUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
   async execute(input: RegisterInputDTO): Promise<User> {
-    const existingUser = await this.userRepository.findByUsername(input.username);
+    const existingUser = await this.userRepository.findByUsername(
+      input.username,
+    );
 
     if (existingUser) {
       throw new Error("Username already exists");

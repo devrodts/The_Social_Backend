@@ -23,7 +23,7 @@ export class LoginUseCase {
     const payload = { sub: user.id, username: user.username };
     return {
       token: this.jwtService.sign(payload),
-      user
+      user,
     };
   }
 }

@@ -4,28 +4,47 @@ import { LoginUseCase } from "src/modules/auth/application/use-cases/login.use-c
 import { RegisterInputDTO } from "src/modules/auth/adapters/dtos/register-input/register-input.dto";
 import { AuthPayload } from "src/modules/auth/adapters/dtos/auth-payload/auth-payload";
 import { LoginInputDTO } from "../../dtos/login-input/login-input.dto";
+import { UserRepository } from "src/modules/users/domain/repository/user.repository";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcryptjs";
 
 @Resolver()
 export class AuthResolver {
   constructor(
     private readonly registerUseCase: RegisterUseCase,
     private readonly loginUseCase: LoginUseCase,
+    private readonly userRepository: UserRepository,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Mutation(() => AuthPayload)
   async register(@Args("input") input: RegisterInputDTO): Promise<AuthPayload> {
-    const user = await this.registerUseCase.execute(input);
-
-    return this.registerUseCase.execute({
-      username: user.username,
-      password: user.password,
-      email: user.email,
-      displayName: user.displayName,
+    const hashedPassword = await bcrypt.hash(input.password, 10);
+    const user = await this.registerUseCase.execute({
+      ...input,
+      password: hashedPassword,
     });
+    const payload = { sub: user.id, username: user.username };
+    return {
+      token: this.jwtService.sign(payload),
+      user,
+    };
   }
-
+  
   @Mutation(() => AuthPayload)
   async login(@Args("input") input: LoginInputDTO): Promise<AuthPayload> {
-    return this.loginUseCase.execute(input);
+    const user = await this.userRepository.findByUsername(input.username);
+
+    if(!user){
+      throw new Error("User not found");
+    }
+    
+    const isValid = await bcrypt.compare(input.password, user.password);
+    if(!isValid) throw new Error("invalid credentials");
+    const payload = { sub: user.id, username: user.username };
+    return {
+      token: this.jwtService.sign(payload),
+      user,
+    };
   }
 }

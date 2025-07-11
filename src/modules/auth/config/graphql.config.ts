@@ -4,13 +4,18 @@ import { join } from "path";
 
 export const graphqlConfig: ApolloDriverConfig = {
   driver: ApolloDriver,
-  autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+  autoSchemaFile: join(process.cwd(), "src/schema.gql"),
   sortSchema: true,
-  playground: process.env.NODE_ENV !== 'production',
-  introspection: process.env.NODE_ENV !== 'production',
+  playground: process.env.NODE_ENV !== "production",
+  introspection: process.env.NODE_ENV !== "production",
   context: ({ req }) => ({ req }),
   formatError: (error) => {
-    const originalError = error.extensions?.originalError as any;
+    interface OriginalError {
+      message: string;
+      statusCode?: number;
+      error?: string;
+    }
+    const originalError = error.extensions?.originalError as OriginalError;
     if (originalError) {
       return {
         message: originalError.message,
