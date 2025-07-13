@@ -1,4 +1,5 @@
-# Twitter Clone API
+# The Social Network
+### The Social network will be a mix of the best in social network and news, open source and free.
 
 A modern, scalable Twitter-like API built with NestJS, TypeORM, GraphQL, and PostgreSQL/SQLite. This application provides a complete social media backend with user authentication, tweet management, likes, and following functionality.
 
