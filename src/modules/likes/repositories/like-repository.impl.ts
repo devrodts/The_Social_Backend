@@ -19,7 +19,10 @@ export class LikeRepositoryImpl implements LikeRepository {
   }
 
   async create(userId: string, tweetId: string): Promise<Like> {
-    const like = this.repository.create({ userId, tweetId });
+    const like = this.repository.create({
+      userId: userId,
+      tweetId: tweetId,
+    });
     return await this.repository.save(like);
   }
 
