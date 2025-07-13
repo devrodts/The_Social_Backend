@@ -24,7 +24,7 @@ describe('Auth E2E Tests', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
-          entities: [User, Tweet, Like], // Include all related entities
+          entities: [User, Tweet, Like],
           synchronize: true,
           logging: false,
         }),
@@ -34,14 +34,14 @@ describe('Auth E2E Tests', () => {
           playground: false,
           debug: false,
         }),
-        UsersModule, // Import UsersModule first
-        AuthModule,  // Then import AuthModule
+        UsersModule,
+        AuthModule,
       ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-  }, 30000); // Increase timeout to 30 seconds
+  }, 30000);
 
   afterAll(async () => {
     if (app) {

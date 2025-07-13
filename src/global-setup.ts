@@ -1,7 +1,10 @@
 const nodeCrypto = require('crypto');
 
 // Define crypto globalmente para compatibilidade com TypeORM e outras libs
-(globalThis as any).crypto = nodeCrypto;
+// Only set if not already available (Node.js v22+ has crypto built-in)
+if (!(globalThis as any).crypto) {
+  (globalThis as any).crypto = nodeCrypto;
+}
 
 // Polyfill para crypto.randomUUID se não estiver disponível
 if (!nodeCrypto.randomUUID) {

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from '../../modules/users/entity/user.entity';
-import { Tweet } from '../../modules/tweets/entities/tweet.entity';
-import { Like } from '../../modules/likes/entities/like.entity';
+// import { User } from '../../modules/users/entity/user.entity';
+// import { Tweet } from '../../modules/tweets/entities/tweet.entity';
+// import { Like } from '../../modules/likes/entities/like.entity';
 import configuration from '../../config/configuration';
 
 jest.mock('@nestjs/typeorm', () => ({
@@ -61,7 +61,7 @@ describe('TypeORM Configuration', () => {
     expect(configService.get('database.host')).toBe('localhost');
     expect(configService.get('database.port')).toBe(5432);
     expect(configService.get('database.username')).toBe('postgres');
-    expect(configService.get('database.database')).toBe('twitter_clone');
+    expect(configService.get('database.database')).toBe('the_social');
   });
 
   it('should have JWT configuration', () => {

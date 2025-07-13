@@ -3,10 +3,6 @@ import './global-setup';
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
-import crypto from 'crypto';
-
-// Define crypto globalmente para compatibilidade com TypeORM e outras libs
-(globalThis as any).crypto = crypto;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
