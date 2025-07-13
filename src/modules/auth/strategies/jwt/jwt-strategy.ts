@@ -8,13 +8,18 @@ import { UserPayload } from "../../value-objects/user-payload";
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (request) => {
+          return request?.cookies?.jwt;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: configService.get("JWT_SECRET"),
     });
   }
 
   async validate(payload: any): Promise<UserPayload> {
-    return new UserPayload(payload.sub, payload.username);
+    return new UserPayload(payload.userId, payload.username);
   }
 }
