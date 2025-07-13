@@ -61,6 +61,20 @@ type AuthResponseDTO {
   user: UserResponse!
 }
 
+type UserResponseDTO {
+  id: ID!
+  username: String!
+  email: String!
+  displayName: String!
+  bio: String
+  avatar: String
+  followersCount: Float!
+  followingCount: Float!
+  tweetsCount: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Query {
   me: User!
   user(id: String!): User

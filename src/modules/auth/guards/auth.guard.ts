@@ -2,6 +2,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '../services/jwt.service';
+import { SecureCookieService } from '../services/secure-cookie.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entity/user.entity';
@@ -12,13 +13,23 @@ export class AuthGuard implements CanActivate {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly secureCookieService: SecureCookieService,
   ) {}
+
+  // Static factory method for testing
+  static create(
+    userRepository: Repository<User>,
+    jwtService: JwtService,
+    secureCookieService: SecureCookieService,
+  ): AuthGuard {
+    return new AuthGuard(userRepository, jwtService, secureCookieService);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ctx = GqlExecutionContext.create(context);
     const { req } = ctx.getContext();
 
-    const token = this.extractTokenFromHeader(req);
+    const token = this.extractToken(req);
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -36,6 +47,18 @@ export class AuthGuard implements CanActivate {
     } catch {
       throw new UnauthorizedException();
     }
+  }
+
+  private extractToken(request: any): string | undefined {
+    // First try to extract from Authorization header
+    const headerToken = this.extractTokenFromHeader(request);
+    if (headerToken) {
+      return headerToken;
+    }
+
+    // If no header token, try to extract from cookie
+    const cookieToken = this.secureCookieService.getJwtFromCookie(request);
+    return cookieToken || undefined;
   }
 
   private extractTokenFromHeader(request: any): string | undefined {

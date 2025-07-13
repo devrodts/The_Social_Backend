@@ -87,7 +87,7 @@ describe('CreateTweetUseCase', () => {
       });
       expect(mockTweetRepository.create).toHaveBeenCalledWith({
         content: input.content,
-        authorId: userId,
+        author: mockUser,
       });
       expect(mockTweetRepository.save).toHaveBeenCalledWith(mockTweet);
       expect(result).toEqual(mockTweet);

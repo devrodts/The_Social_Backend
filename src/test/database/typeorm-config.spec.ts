@@ -61,7 +61,7 @@ describe('TypeORM Configuration', () => {
     expect(configService.get('database.host')).toBe('localhost');
     expect(configService.get('database.port')).toBe(5432);
     expect(configService.get('database.username')).toBe('postgres');
-    expect(configService.get('database.database')).toBe('the_social');
+    expect(configService.get('database.database')).toBe('twitter_clone');
   });
 
   it('should have JWT configuration', () => {

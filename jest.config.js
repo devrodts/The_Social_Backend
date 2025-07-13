@@ -10,4 +10,5 @@ module.exports = {
   testEnvironment: 'node',
   // Exclude E2E tests from unit test runs
   testPathIgnorePatterns: ['/node_modules/', '.*\\.e2e-spec\\.ts$'],
+  setupFilesAfterEnv: ['<rootDir>/test/jest.setup.js'],
 }; 

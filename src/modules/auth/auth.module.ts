@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
 import { JwtService } from './services';
 import { User } from '../users/entity/user.entity';
 import { JwtStrategy } from './strategies/jwt/jwt-strategy';
+import { SecureCookieService } from './services/secure-cookie.service';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { JwtStrategy } from './strategies/jwt/jwt-strategy';
     JwtService,
     AuthGuard,
     JwtStrategy,
+    SecureCookieService,
   ],
   exports: [AuthGuard, JwtService],
 })
