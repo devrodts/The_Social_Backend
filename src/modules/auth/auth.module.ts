@@ -10,6 +10,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { UsersModule } from '../users/users.module';
 import { JwtService } from './services';
 import { User } from '../users/entity/user.entity';
+import { JwtStrategy } from './strategies/jwt/jwt-strategy';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { User } from '../users/entity/user.entity';
     HashService,
     JwtService,
     AuthGuard,
+    JwtStrategy,
   ],
   exports: [AuthGuard, JwtService],
 })
