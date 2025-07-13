@@ -7,6 +7,7 @@ import { AuthResolver } from './auth.resolver';
 import { RefreshTokenUseCase, RegisterUseCase, LoginUseCase } from './use-cases';
 import { HashService } from './services/hash.service';
 import { AuthGuard } from './guards/auth.guard';
+import { GqlAuthGuard } from './guards/gql-auth.guard';
 import { UsersModule } from '../users/users.module';
 import { JwtService } from './services';
 import { User } from '../users/entity/user.entity';
@@ -35,9 +36,10 @@ import { SecureCookieService } from './services/secure-cookie.service';
     HashService,
     JwtService,
     AuthGuard,
+    GqlAuthGuard,
     JwtStrategy,
     SecureCookieService,
   ],
-  exports: [AuthGuard, JwtService],
+  exports: [AuthGuard, GqlAuthGuard, JwtService],
 })
 export class AuthModule {}

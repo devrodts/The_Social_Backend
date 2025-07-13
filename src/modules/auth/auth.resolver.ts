@@ -63,6 +63,9 @@ export class AuthResolver {
   @Query(() => UserResponseDTO)
   @UseGuards(AuthGuard)
   async me(@CurrentUser() user: User): Promise<UserResponseDTO> {
+    if (!user) {
+      throw new Error('User not found in context');
+    }
     return {
       id: user.id,
       username: user.username,
