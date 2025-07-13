@@ -9,6 +9,10 @@ commits.md
 .env.example
 js_tests
 coverage
+system_test.md
+mermaid
+cookies.txt
+test-like-unlike-flow.js
 
 # Logs
 logs
