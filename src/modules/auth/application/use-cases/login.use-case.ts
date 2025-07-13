@@ -1,9 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UserRepository } from "src/modules/users/domain/repository/user.repository";
-import { RegisterInputDTO } from "../../adapters/dtos/register-input/register-input.dto";
 import { AuthPayload } from "../../adapters/dtos/auth-payload/auth-payload";
-import * as bcrypt from "bcryptjs";
 import { LoginInputDTO } from "../../adapters/dtos/login-input/login-input.dto";
 import { PasswordHashService } from "../services/password-hash.service";
 

@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Args } from "@nestjs/graphql";
+import { Resolver, Mutation, Args, Query } from "@nestjs/graphql";
 import { RegisterUseCase } from "src/modules/auth/application/use-cases/register.use-case";
 import { LoginUseCase } from "src/modules/auth/application/use-cases/login.use-case";
 import { RegisterInputDTO } from "src/modules/auth/adapters/dtos/register-input/register-input.dto";
@@ -28,8 +28,8 @@ export class AuthResolver {
       user,
     };
   }
-  
-  @Mutation(() => AuthPayload)
+
+  @Query(() => AuthPayload)
   async login(@Args("input") input: LoginInputDTO): Promise<AuthPayload> {
     const authPayload = await this.loginUseCase.execute(input);
 
@@ -37,8 +37,8 @@ export class AuthResolver {
       throw new Error("invalid credentials");
     }
 
-    const payload = { sub: authPayload.user.id, username: authPayload.user.username };
-    return {  
+    const payload = {sub: authPayload.user.id, username: authPayload.user.username};
+    return {
       token: this.jwtService.sign(payload),
       user: authPayload.user,
     };
