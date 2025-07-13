@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LikesService } from './likes.service';
-import { LikesResolver } from 'src/modules/likes/likes.resolver';
+import { LikesResolver } from './likes.resolver';
 import { Like } from './entities/like.entity';
 import { CreateLikeUseCase, FindLikesUseCase, RemoveLikeUseCase } from './use-cases';
 import { LikeRepositoryImpl } from './repositories/like-repository.impl';
-
 
 @Module({
   imports: [TypeOrmModule.forFeature([Like])],
@@ -15,12 +14,8 @@ import { LikeRepositoryImpl } from './repositories/like-repository.impl';
     CreateLikeUseCase,
     FindLikesUseCase,
     RemoveLikeUseCase,
-    {
-      provide: 'ILikeRepository',
-      useClass: LikeRepositoryImpl,
-    },
+    LikeRepositoryImpl,
   ],
   exports: [LikesService, LikeRepositoryImpl],
 })
-
 export class LikesModule {}

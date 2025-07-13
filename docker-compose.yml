@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
-    container_name: twitter_postgres
+    container_name: the_social_postgres
     environment:
-      POSTGRES_DB: twitter_clone
+      POSTGRES_DB: the_social
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
@@ -13,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - twitter_network
+      - the_social_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -22,13 +20,13 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: twitter_redis
+    container_name: the_social_redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - twitter_network
+      - the_social_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -39,12 +37,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: twitter_app
+    container_name: the_social_app
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/twitter_clone
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/the_social
       - REDIS_URL=redis://redis:6379
     depends_on:
       postgres:
@@ -52,7 +50,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - twitter_network
+      - the_social_network
     volumes:
       - .:/app
       - /app/node_modules
@@ -62,5 +60,5 @@ volumes:
   redis_data:
 
 networks:
-  twitter_network:
+  the_social_network:
     driver: bridge 

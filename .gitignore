@@ -7,6 +7,8 @@ features.md
 commits.md
 .env
 .env.example
+js_tests
+coverage
 
 # Logs
 logs

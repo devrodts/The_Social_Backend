@@ -2,37 +2,39 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '../services/jwt.service';
-import { UserRepository } from 'src/modules/users/repositories/user.repository';
-
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../../users/entity/user.entity';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly userRepository: UserRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ctx = GqlExecutionContext.create(context);
-    const request = ctx.getContext().req;
+    const { req } = ctx.getContext();
 
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractTokenFromHeader(req);
     if (!token) {
-      throw new UnauthorizedException('Token not provided');
+      throw new UnauthorizedException();
     }
 
     try {
       const payload = this.jwtService.verify(token);
-      const user = await this.userRepository.findUserById(payload.userId);
-
+      const user = await this.userRepository.findOne({ where: { id: payload.userId } });
+      
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        throw new UnauthorizedException();
       }
 
-      request.user = user;
+      req.user = user;
       return true;
-    } catch (error) {
-      throw new UnauthorizedException('Invalid token');
+    } catch {
+      throw new UnauthorizedException();
     }
   }
 

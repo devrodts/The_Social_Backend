@@ -1,36 +1,37 @@
-import { Injectable, ConflictException } from '@nestjs/common';
-import { UserRepository } from '../repositories/user.repository';
-import { RegisterUserDTO } from '../dtos/create-user/create-user.dto';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../entity/user.entity';
-import bcrypt from "bcryptjs"
+import { RegisterUserDTO } from '../dtos/create-user/create-user.dto';
+import bcrypt from "bcryptjs";
 
 @Injectable()
 export class CreateUserUseCase {
   constructor(
-    private readonly userRepository: UserRepository,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async execute(registerUserDTO: RegisterUserDTO): Promise<User> {
-    
-    const existingUserByEmail = await this.userRepository.findByEmail(registerUserDTO.email);
-
+    const existingUserByEmail = await this.userRepository.findOne({ where: { email: registerUserDTO.email } });
     if (existingUserByEmail) {
-      throw new ConflictException('User with this email already exists');
+      throw new Error('Email already exists');
     }
-    const existingUserByUsername = await this.userRepository.findByUsername(registerUserDTO.username || "");
 
+    const existingUserByUsername = await this.userRepository.findOne({ where: { username: registerUserDTO.username || "" } });
     if (existingUserByUsername) {
-      throw new ConflictException('User with this username already exists');
+      throw new Error('Username already exists');
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(registerUserDTO.password, 10);
 
-    const user = {
-        ...registerUserDTO,
-        password: hashedPassword,
-    } as User
+    const user = this.userRepository.create({
+      username: registerUserDTO.username,
+      email: registerUserDTO.email,
+      password: hashedPassword,
+    });
 
-    return await this.userRepository.createUser(user);
+    return await this.userRepository.save(user);
   }
 }

@@ -1,12 +1,29 @@
+import { ObjectType, Field } from '@nestjs/graphql';
 import { UUID } from "crypto";
 
-export interface AuthResponseDTO {
+@ObjectType()
+export class UserResponse {
+  @Field(() => String)
+  id: UUID;
+
+  @Field()
+  username: string;
+
+  @Field()
+  email: string;
+
+  @Field()
+  displayName: string;
+}
+
+@ObjectType()
+export class AuthResponseDTO {
+  @Field()
   token: string;
+
+  @Field({ nullable: true })
   refreshToken?: string;
-  user: {
-    id: UUID;
-    username: string;
-    email: string;
-    displayName: string;
-  };
+
+  @Field(() => UserResponse)
+  user: UserResponse;
 }

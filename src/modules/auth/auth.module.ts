@@ -2,12 +2,14 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthResolver } from './auth.resolver';
 import { RefreshTokenUseCase, RegisterUseCase, LoginUseCase } from './use-cases';
 import { HashService } from './services/hash.service';
 import { AuthGuard } from './guards/auth.guard';
 import { UsersModule } from '../users/users.module';
 import { JwtService } from './services';
+import { User } from '../users/entity/user.entity';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { JwtService } from './services';
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([User]),
     UsersModule,
   ],
   providers: [

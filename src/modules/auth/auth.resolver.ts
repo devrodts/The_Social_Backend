@@ -4,11 +4,13 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { UseGuards, ValidationPipe } from '@nestjs/common';
 import { RegisterUseCase, LoginUseCase } from "./use-cases";
 import { RefreshTokenUseCase } from './use-cases/refresh-token.use-case';
-import { RegisterDTO } from './dtos/register.interface.dto';
+import { RegisterInputDTO } from './dtos/register-input.dto';
 import { LoginDTO } from './dtos/login.dto';
 import { RefreshTokenDTO } from './dtos/refresh-token.dto';
+import { AuthResponseDTO } from './dtos/auth-response.dto';
+import { AuthGuard } from './guards/auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-
+import { User } from '../users/entity/user.entity';
 
 @Resolver(() => AuthResponseDTO)
 export class AuthResolver {
@@ -20,7 +22,7 @@ export class AuthResolver {
 
   @Mutation(() => AuthResponseDTO)
   async register(
-    @Args('input', ValidationPipe) input: RegisterDTO,
+    @Args('input', ValidationPipe) input: RegisterInputDTO,
   ): Promise<AuthResponseDTO> {
     return this.registerUseCase.execute(input);
   }

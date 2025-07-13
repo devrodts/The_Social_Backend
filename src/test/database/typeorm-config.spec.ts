@@ -1,35 +1,42 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../modules/users/entity/user.entity';
 import { Tweet } from '../../modules/tweets/entities/tweet.entity';
 import { Like } from '../../modules/likes/entities/like.entity';
+import configuration from '../../config/configuration';
+
+jest.mock('@nestjs/typeorm', () => ({
+  TypeOrmModule: {
+    forRootAsync: jest.fn().mockReturnValue({
+      module: class MockTypeOrmModule {},
+      providers: [],
+    }),
+  },
+}));
 
 describe('TypeORM Configuration', () => {
   let module: TestingModule;
   let configService: ConfigService;
 
   beforeAll(async () => {
+    process.env.DATABASE_HOST = 'localhost';
+    process.env.DATABASE_PORT = '5432';
+    process.env.DATABASE_USERNAME = 'postgres';
+    process.env.DATABASE_PASSWORD = 'password';
+    process.env.DATABASE_NAME = 'twitter_clone';
+    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_EXPIRES_IN = '1h';
+    process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
+    process.env.JWT_REFRESH_EXPIRES_IN = '7d';
+    process.env.REDIS_HOST = 'localhost';
+    process.env.REDIS_PORT = '6379';
+    process.env.REDIS_URL = 'redis://localhost:6379';
+
     module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          envFilePath: '.env',
-        }),
-        TypeOrmModule.forRootAsync({
-          imports: [ConfigModule],
-          useFactory: (configService: ConfigService) => ({
-            type: 'postgres',
-            host: configService.get('database.host'),
-            port: configService.get('database.port'),
-            username: configService.get('database.username'),
-            password: configService.get('database.password'),
-            database: configService.get('database.database'),
-            entities: [User, Tweet, Like],
-            synchronize: false, // Don't synchronize in tests
-            logging: false,
-          }),
-          inject: [ConfigService],
+          load: [configuration],
         }),
       ],
     }).compile();
@@ -38,7 +45,9 @@ describe('TypeORM Configuration', () => {
   });
 
   afterAll(async () => {
-    await module.close();
+    if (module) {
+      await module.close();
+    }
   });
 
   it('should load database configuration', () => {

@@ -1,38 +1,41 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '../services/jwt.service';
-import { UserRepository } from 'src/modules/users/repositories/user.repository';
-import { RefreshTokenDTO } from '../dtos/refresh-token.dto';
-import { AuthResponseDTO } from '../dtos/auth-response.dto'; // Add this import
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from "../../users/entity/user.entity";
+import { RefreshTokenDTO } from "../dtos/refresh-token.dto";
+import { JwtService } from "../services";
+import { AuthResponseDTO, UserResponse } from "../dtos/auth-response.dto";
 
 @Injectable()
 export class RefreshTokenUseCase {
   constructor(
-    private readonly userRepository: UserRepository,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
 
   async execute(dto: RefreshTokenDTO): Promise<AuthResponseDTO> {
-    try {
-      const payload = this.jwtService.verifyRefreshToken(dto.refreshToken);
-      const user = await this.userRepository.findUserById(payload.userId);
-
-      if (!user) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      const newToken = this.jwtService.sign({ userId: user.id });
-
-      return {
-        token: newToken,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          displayName: user.displayName,
-        },
-      };
-    } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+    const payload = this.jwtService.verifyRefreshToken(dto.refreshToken);
+    const user = await this.userRepository.findOne({ where: { id: payload.userId } });
+    
+    if (!user) {
+      throw new UnauthorizedException("Invalid refresh token");
     }
+
+    const token = this.jwtService.sign({ userId: user.id });
+    const refreshToken = this.jwtService.signRefreshToken({ userId: user.id });
+
+    const userResponse = new UserResponse();
+    userResponse.id = user.id as any;
+    userResponse.username = user.username;
+    userResponse.email = user.email;
+    userResponse.displayName = user.displayName;
+
+    const authResponse = new AuthResponseDTO();
+    authResponse.token = token;
+    authResponse.refreshToken = refreshToken;
+    authResponse.user = userResponse;
+
+    return authResponse;
   }
 }

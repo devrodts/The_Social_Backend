@@ -1,0 +1,99 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Like {
+  id: ID!
+  user: User!
+  tweet: Tweet!
+  createdAt: DateTime!
+  userId: String!
+  tweetId: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Tweet {
+  id: ID!
+  content: String!
+  likesCount: Float!
+  retweetsCount: Float!
+  commentsCount: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  author: User!
+  likes: [Like!]!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  displayName: String!
+  bio: String
+  avatar: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  tweets: [Tweet!]!
+  likes: [Like!]!
+  following: [User!]!
+  followers: [User!]!
+  tweetsCount: Int!
+  followingCount: Int!
+  followersCount: Int!
+  likesCount: Int!
+  isVerified: Boolean!
+}
+
+type UserResponse {
+  id: String!
+  username: String!
+  email: String!
+  displayName: String!
+}
+
+type AuthResponseDTO {
+  token: String!
+  refreshToken: String
+  user: UserResponse!
+}
+
+type Query {
+  me: User!
+  user(id: String!): User
+  tweetLikes(tweetId: ID!, limit: Int! = 10, offset: Int! = 0): [Like!]!
+  userLikes(userId: ID, limit: Int! = 10, offset: Int! = 0): [Like!]!
+  likesCount(tweetId: ID!): Int!
+  isLiked(tweetId: ID!): Boolean!
+}
+
+type Mutation {
+  register(input: RegisterInputDTO!): AuthResponseDTO!
+  login(input: LoginDTO!): AuthResponseDTO!
+  refreshToken(input: RefreshTokenDTO!): AuthResponseDTO!
+  likeTweet(input: CreateLikeInputDTO!): Like!
+  unlikeTweet(tweetId: ID!): Boolean!
+}
+
+input RegisterInputDTO {
+  username: String!
+  email: String!
+  password: String!
+  displayName: String!
+}
+
+input LoginDTO {
+  email: String!
+  password: String!
+}
+
+input RefreshTokenDTO {
+  refreshToken: String!
+}
+
+input CreateLikeInputDTO {
+  tweetId: ID!
+}

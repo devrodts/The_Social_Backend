@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn, Unique, Column } from 'typeorm';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
 import { User } from '../../users/entity/user.entity';
@@ -27,7 +27,11 @@ export class Like {
   @CreateDateColumn()
   createdAt: Date;
 
-  // Foreign keys for query optimization
+  @Field()
+  @Column()
   userId: string;
+
+  @Field()
+  @Column()
   tweetId: string;
 }

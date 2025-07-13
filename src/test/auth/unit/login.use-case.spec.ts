@@ -1,98 +1,180 @@
-import { LoginUseCase } from "../../../modules/auth/use-cases/login.use-case";
-import { UserRepository } from "../../../modules/users/repositories/user.repository";
-import { JwtService } from "../../../modules/auth/services/jwt.service";
-import { HashService } from "../../../modules/auth/services/hash.service";
-import { LoginDTO } from "src/modules/auth/dtos/login.dto";
-import { User } from "../../../modules/users/entity/user.entity";
-const mockUser: User = {
-  id: "03k45n6y76-234n53o3-aspako-aposak-3n4594hen",
-  username: "testuser",
-  email: "test@example.com",
-  password: "hashedPassword123",
-  displayName: "Test User",
-  followers: [],
-  following: [],
-  isVerified: false,
-  bio: "test bio",
-  avatar: "test avatar",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  tweets: [],
-  likes: [],
-  tweetsCount: 3,
-  followingCount: 100,
-  followersCount: 200,
-  likesCount: 10,
-};
+import { Test, TestingModule } from '@nestjs/testing';
+import { UnauthorizedException } from '@nestjs/common';
+import { LoginUseCase } from '../../../../src/modules/auth/use-cases/login.use-case';
+import { HashService } from '../../../../src/modules/auth/services/hash.service';
+import { JwtService } from '../../../../src/modules/auth/services/jwt.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../../../../src/modules/users/entity/user.entity';
+import { LoginDTO } from '../../../modules/auth/dtos/login.dto';
+import { AuthResponseDTO } from '../../../modules/auth/dtos/auth-response.dto';
 
-describe("LoginUseCase", () => {
-  
+describe('LoginUseCase', () => {
   let useCase: LoginUseCase;
-  let userRepository: jest.Mocked<UserRepository>;
-  let jwtService: jest.Mocked<JwtService>;
+  let userRepository: jest.Mocked<Repository<User>>;
   let hashService: jest.Mocked<HashService>;
+  let jwtService: jest.Mocked<JwtService>;
 
-  beforeEach(() => {
-    userRepository = {
-      findByUsername: jest.fn(),
-      findByEmail: jest.fn(),
+  const mockUser: User = {
+    id: '123e4567-e89b-12d3-a456-426614174000',
+    username: 'testuser',
+    email: 'test@example.com',
+    password: 'hashedPassword123',
+    displayName: 'Test User',
+    bio: undefined,
+    avatar: undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    tweets: [],
+    likes: [],
+    following: [],
+    followers: [],
+    tweetsCount: 0,
+    followingCount: 0,
+    followersCount: 0,
+    likesCount: 0,
+    isVerified: false,
+  };
+
+  const mockLoginInput: LoginDTO = {
+    email: 'test@example.com',
+    password: 'password123',
+  };
+
+  const mockAuthResponse: AuthResponseDTO = {
+    token: 'jwt-token-123',
+    refreshToken: 'refresh-token-123',
+    user: {
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      username: 'testuser',
+      email: 'test@example.com',
+      displayName: 'Test User',
+    },
+  };
+
+  beforeEach(async () => {
+    const mockUserRepository = {
+      findOne: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
       save: jest.fn(),
-      findById: jest.fn(),
-      findAll: jest.fn(),
-    } as any;
-    jwtService = { sign: jest.fn(), signRefreshToken: jest.fn() } as any;
-    hashService = { 
-      compare: jest.fn(),
+    };
+
+    const mockHashService = {
       hash: jest.fn(),
+      compare: jest.fn(),
       generateSalt: jest.fn(),
-      saltRounds: 10
-    } as any;
-    useCase = new LoginUseCase(userRepository, hashService, jwtService);
+    };
+
+    const mockJwtService = {
+      sign: jest.fn(),
+      signRefreshToken: jest.fn(),
+      verify: jest.fn(),
+      verifyRefreshToken: jest.fn(),
+      decode: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        LoginUseCase,
+        { provide: getRepositoryToken(User), useValue: mockUserRepository },
+        { provide: HashService, useValue: mockHashService },
+        { provide: JwtService, useValue: mockJwtService },
+      ],
+    }).compile();
+
+    useCase = module.get<LoginUseCase>(LoginUseCase);
+    userRepository = module.get(getRepositoryToken(User));
+    hashService = module.get(HashService);
+    jwtService = module.get(JwtService);
   });
 
-  it("Should authenticate with success with correct credentials", async () => {
-    userRepository.findByEmail.mockResolvedValue(mockUser);
-    hashService.compare.mockResolvedValue(true);
-    jwtService.sign.mockReturnValue("jwt-token-123");
-    jwtService.signRefreshToken.mockReturnValue("refresh-token-123");
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    const input: LoginDTO = { email: "test@test.com.br", password: "password123" };
-    const result = await useCase.execute(input);
+  describe('execute', () => {
+    it('should successfully login a user with valid credentials', async () => {
+      userRepository.findOne.mockImplementation(({ where }) => {
+        if (where && typeof where === 'object' && 'email' in where) return Promise.resolve(mockUser);
+        return Promise.resolve(null);
+      });
+      hashService.compare.mockResolvedValue(true);
+      jwtService.sign.mockReturnValue('jwt-token-123');
+      jwtService.signRefreshToken.mockReturnValue('refresh-token-123');
 
-    expect(result).toEqual({ 
-      token: "jwt-token-123", 
-      refreshToken: "refresh-token-123",
-      user: {
-        id: mockUser.id,
-        username: mockUser.username,
-        email: mockUser.email,
-        displayName: mockUser.displayName,
-      }
+      const result = await useCase.execute(mockLoginInput);
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@example.com' } });
+      expect(hashService.compare).toHaveBeenCalledWith('password123', 'hashedPassword123');
+      expect(jwtService.sign).toHaveBeenCalledWith({ userId: mockUser.id });
+      expect(jwtService.signRefreshToken).toHaveBeenCalledWith({ userId: mockUser.id });
+
+      expect(result).toBeInstanceOf(AuthResponseDTO);
+      expect(result.token).toBe('jwt-token-123');
+      expect(result.refreshToken).toBe('refresh-token-123');
+      expect(result.user.id).toBe(mockUser.id);
+      expect(result.user.username).toBe(mockUser.username);
+      expect(result.user.email).toBe(mockUser.email);
+      expect(result.user.displayName).toBe(mockUser.displayName);
     });
-    expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com.br");
-    expect(hashService.compare).toHaveBeenCalledWith("password123", mockUser.password);
-    expect(jwtService.sign).toHaveBeenCalledWith({ userId: mockUser.id });
-  });
 
-  it("Should throw a error when user not found", async () => {
-    userRepository.findByEmail.mockResolvedValue(null);
-    const input: LoginDTO = { email: "test@test.com.brr", password: "any" };
-    await expect(useCase.execute(input)).rejects.toThrow("Invalid credentials");
-    expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com.brr");
-    expect(hashService.compare).not.toHaveBeenCalled();
-    expect(jwtService.sign).not.toHaveBeenCalled();
-  });
+    it('should throw UnauthorizedException when user does not exist', async () => {
+      userRepository.findOne.mockResolvedValue(null);
 
-  it("deve lançar erro se a senha for inválida", async () => {
-    userRepository.findByEmail.mockResolvedValue(mockUser);
-    hashService.compare.mockResolvedValue(false);
-    const input: LoginDTO = { email: "test@test.com.br", password: "wrong" };
-    await expect(useCase.execute(input)).rejects.toThrow("Invalid credentials");
-    expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com.br");
-    expect(hashService.compare).toHaveBeenCalledWith("wrong", mockUser.password);
-    expect(jwtService.sign).not.toHaveBeenCalled();
+      await expect(useCase.execute(mockLoginInput)).rejects.toThrow(
+        new UnauthorizedException('Invalid credentials'),
+      );
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@example.com' } });
+      expect(hashService.compare).not.toHaveBeenCalled();
+      expect(jwtService.sign).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException when password is invalid', async () => {
+      userRepository.findOne.mockResolvedValue(mockUser);
+      hashService.compare.mockResolvedValue(false);
+
+      await expect(useCase.execute(mockLoginInput)).rejects.toThrow(
+        new UnauthorizedException('Invalid credentials'),
+      );
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@example.com' } });
+      expect(hashService.compare).toHaveBeenCalledWith('password123', 'hashedPassword123');
+      expect(jwtService.sign).not.toHaveBeenCalled();
+    });
+
+    it('should handle repository errors gracefully', async () => {
+      userRepository.findOne.mockRejectedValue(new Error('Database error'));
+
+      await expect(useCase.execute(mockLoginInput)).rejects.toThrow('Database error');
+    });
+
+    it('should handle hash service errors gracefully', async () => {
+      userRepository.findOne.mockResolvedValue(mockUser);
+      hashService.compare.mockRejectedValue(new Error('Hash error'));
+
+      await expect(useCase.execute(mockLoginInput)).rejects.toThrow('Hash error');
+    });
+
+    it('should handle JWT service errors gracefully', async () => {
+      userRepository.findOne.mockResolvedValue(mockUser);
+      hashService.compare.mockResolvedValue(true);
+      jwtService.sign.mockImplementation(() => {
+        throw new Error('JWT error');
+      });
+
+      await expect(useCase.execute(mockLoginInput)).rejects.toThrow('JWT error');
+    });
+
+    it('should handle refresh token JWT service errors gracefully', async () => {
+      userRepository.findOne.mockResolvedValue(mockUser);
+      hashService.compare.mockResolvedValue(true);
+      jwtService.sign.mockReturnValue('jwt-token-123');
+      jwtService.signRefreshToken.mockImplementation(() => {
+        throw new Error('Refresh JWT error');
+      });
+
+      await expect(useCase.execute(mockLoginInput)).rejects.toThrow('Refresh JWT error');
+    });
   });
-});
+}); 
