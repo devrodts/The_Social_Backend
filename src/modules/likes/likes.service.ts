@@ -14,7 +14,7 @@ export class LikesService {
     return await this.createLikeUseCase.execute(userId, tweetId);
   }
 
-  async removeLike(userId: string, tweetId: string): Promise<boolean> {
+  async removeLike(userId: string, tweetId: string): Promise<{ success: boolean; message: string }> {
     return await this.removeLikeUseCase.execute(userId, tweetId);
   }
 

@@ -26,7 +26,8 @@ export class LikesResolver {
     @Args('tweetId', { type: () => ID }) tweetId: string,
     @CurrentUser() user: User,
   ): Promise<boolean> {
-    return await this.likesService.removeLike(user.id, tweetId);
+    const result = await this.likesService.removeLike(user.id, tweetId);
+    return result.success;
   }
 
   @Query(() => [Like])
