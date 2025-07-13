@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
-import { User } from 'src/modules/users/entity/user.entity';
-import { Tweet } from 'src/modules/tweets/entities/tweet.entity';
+import { User } from '../../users/entity/user.entity';
+import { Tweet } from '../../tweets/entities/tweet.entity';
 
 @ObjectType()
 @Entity('likes')
