@@ -7,19 +7,18 @@ import { Tweet } from '../../tweets/entities/tweet.entity';
 @ObjectType()
 @Entity('likes')
 @Unique(['userId', 'tweetId'])
-
 export class Like {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Field(() => User)
-  @ManyToOne(() => User, user => user.likes, { eager: true })
+  @ManyToOne(() => User, user => user.likes)
   @JoinColumn({ name: 'userId' })
   user: User;
 
   @Field(() => Tweet)
-  @ManyToOne(() => Tweet, tweet => tweet.likes, { eager: true })
+  @ManyToOne(() => Tweet, tweet => tweet.likes)
   @JoinColumn({ name: 'tweetId' })
   tweet: Tweet;
 
