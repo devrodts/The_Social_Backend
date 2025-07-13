@@ -3,6 +3,11 @@
 /node_modules
 /build
 todo.md
+features.md
+commits.md
+.env
+.env.example
+
 # Logs
 logs
 *.log
