@@ -7,11 +7,15 @@ import { SecureCookieService } from '../../../modules/auth/services/secure-cooki
 import { User } from '../../../modules/users/entity/user.entity';
 
 // Mock GqlExecutionContext
-jest.mock('@nestjs/graphql', () => ({
-  GqlExecutionContext: {
-    create: jest.fn(),
-  },
-}));
+jest.mock('@nestjs/graphql', () => {
+  const actual = jest.requireActual('@nestjs/graphql');
+  return {
+    ...actual,
+    GqlExecutionContext: {
+      create: jest.fn(),
+    },
+  };
+});
 
 describe('AuthGuard', () => {
   let authGuard: AuthGuard;

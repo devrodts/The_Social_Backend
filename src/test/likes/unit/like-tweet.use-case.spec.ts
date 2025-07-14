@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Like } from '../../../modules/likes/entities/like.entity';
 import { Tweet } from '../../../modules/tweets/entities/tweet.entity';
 import { User } from '../../../modules/users/entity/user.entity';
