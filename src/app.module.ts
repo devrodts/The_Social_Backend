@@ -10,9 +10,11 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
 import { LikesModule } from "./modules/likes/likes.module";
 import { TweetsModule } from "./modules/tweets/tweets.module";
+import { FollowsModule } from "./modules/follows/follows.module";
 import { User } from "./modules/users/entity/user.entity";
 import { Tweet } from "./modules/tweets/entities/tweet.entity";
 import { Like } from "./modules/likes/entities/like.entity";
+import { Follow } from "./modules/follows/entities/follow.entity";
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { Like } from "./modules/likes/entities/like.entity";
       useFactory: (configService: ConfigService) => ({
         type: 'sqlite' as const,
         database: ':memory:',
-        entities: [User, Tweet, Like],
+        entities: [User, Tweet, Like, Follow],
         synchronize: true,
         logging: true,
       }),
@@ -42,6 +44,7 @@ import { Like } from "./modules/likes/entities/like.entity";
     UsersModule,
     LikesModule,
     TweetsModule,
+    FollowsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
