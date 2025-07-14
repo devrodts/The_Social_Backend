@@ -1,9 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 import { Tweet } from '../../tweets/entities/tweet.entity';
 import { Like } from '../../likes/entities/like.entity';
-
-// import { Follow } from '@/follows/entities/follow.entity';
+import { Follow } from '../../follows/entities/follow.entity';
 
 @ObjectType()
 @Entity('users')
@@ -52,18 +51,13 @@ export class User {
   @OneToMany(() => Like, like => like.user)
   likes: Like[];
 
-  @Field(() => [User])
-  @ManyToMany(() => User, user => user.followers)
-  @JoinTable({
-    name: 'follows',
-    joinColumn: { name: 'followerId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'followingId', referencedColumnName: 'id' }
-  })
-  following: User[];
+  @Field(() => [Follow])
+  @OneToMany(() => Follow, follow => follow.follower)
+  following: Follow[];
 
-  @Field(() => [User])
-  @ManyToMany(() => User, user => user.following)
-  followers: User[];
+  @Field(() => [Follow])
+  @OneToMany(() => Follow, follow => follow.following)
+  followers: Follow[];
 
 
   @Field(() => Int)
