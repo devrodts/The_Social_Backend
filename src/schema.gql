@@ -28,6 +28,15 @@ type Tweet {
   likes: [Like!]!
 }
 
+type Follow {
+  id: ID!
+  follower: User!
+  following: User!
+  createdAt: DateTime!
+  followerId: String!
+  followingId: String!
+}
+
 type User {
   id: ID!
   username: String!
@@ -39,8 +48,8 @@ type User {
   updatedAt: DateTime!
   tweets: [Tweet!]!
   likes: [Like!]!
-  following: [User!]!
-  followers: [User!]!
+  following: [Follow!]!
+  followers: [Follow!]!
   tweetsCount: Int!
   followingCount: Int!
   followersCount: Int!
@@ -78,6 +87,8 @@ type UserResponseDTO {
 type Query {
   me: User!
   user(id: String!): User
+  findFollowers(userId: String!, limit: Float, offset: Float): [Follow!]!
+  findFollowing(userId: String!, limit: Float, offset: Float): [Follow!]!
   tweetLikes(tweetId: ID!, limit: Int! = 10, offset: Int! = 0): [Like!]!
   userLikes(userId: ID, limit: Int! = 10, offset: Int! = 0): [Like!]!
   likesCount(tweetId: ID!): Int!
@@ -89,6 +100,8 @@ type Mutation {
   register(input: RegisterInputDTO!): AuthResponseDTO!
   login(input: LoginDTO!): AuthResponseDTO!
   refreshToken(input: RefreshTokenDTO!): AuthResponseDTO!
+  followUser(followingId: String!): Follow!
+  unfollowUser(followingId: String!): Boolean!
   likeTweet(input: CreateLikeInputDTO!): Like!
   unlikeTweet(tweetId: ID!): Boolean!
   createTweet(input: CreateTweetInputDTO!): Tweet!
