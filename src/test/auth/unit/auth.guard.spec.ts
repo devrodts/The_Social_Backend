@@ -135,6 +135,8 @@ describe('AuthGuard', () => {
     // Arrange
     mockRequest.headers.authorization = undefined;
     mockRequest.cookies = {};
+    // Mock SecureCookieService to return null when no cookies
+    mockSecureCookieService.getJwtFromCookie.mockReturnValue(null);
 
     // Act & Assert
     await expect(authGuard.canActivate(mockExecutionContext)).rejects.toThrow(
@@ -192,6 +194,8 @@ describe('AuthGuard', () => {
   it('should handle malformed Authorization header', async () => {
     // Arrange
     mockRequest.headers.authorization = 'InvalidFormat token';
+    // Mock SecureCookieService to return null when no valid token is available
+    mockSecureCookieService.getJwtFromCookie.mockReturnValue(null);
 
     // Act & Assert
     await expect(authGuard.canActivate(mockExecutionContext)).rejects.toThrow(
