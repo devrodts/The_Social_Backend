@@ -13,6 +13,7 @@ import { JwtService } from './services';
 import { User } from '../users/entity/user.entity';
 import { JwtStrategy } from './strategies/jwt/jwt-strategy';
 import { SecureCookieService } from './services/secure-cookie.service';
+import { FollowsModule } from '../follows/follows.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SecureCookieService } from './services/secure-cookie.service';
     }),
     TypeOrmModule.forFeature([User]),
     UsersModule,
+    FollowsModule,
   ],
   providers: [
     AuthResolver,
