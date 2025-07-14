@@ -6,6 +6,7 @@ import { UsersModule } from '../../../modules/users/users.module';
 import { User } from '../../../modules/users/entity/user.entity';
 import { Tweet } from '../../../modules/tweets/entities/tweet.entity';
 import { Like } from '../../../modules/likes/entities/like.entity';
+import { Follow } from '../../../modules/follows/entities/follow.entity';
 
 describe('Auth Module Dependencies', () => {
   let module: TestingModule;
@@ -19,7 +20,7 @@ describe('Auth Module Dependencies', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
-          entities: [User, Tweet, Like],
+          entities: [User, Tweet, Like, Follow],
           synchronize: true,
           logging: false,
         }),

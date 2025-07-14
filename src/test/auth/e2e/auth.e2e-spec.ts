@@ -11,6 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../../modules/users/entity/user.entity';
 import { Tweet } from '../../../modules/tweets/entities/tweet.entity';
 import { Like } from '../../../modules/likes/entities/like.entity';
+import { Follow } from '../../../modules/follows/entities/follow.entity';
 
 describe('Auth E2E Tests', () => {
   let app: INestApplication;
@@ -24,7 +25,7 @@ describe('Auth E2E Tests', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
-          entities: [User, Tweet, Like],
+          entities: [User, Tweet, Like, Follow],
           synchronize: true,
           logging: false,
         }),
@@ -280,7 +281,16 @@ describe('Auth E2E Tests', () => {
     describe('me query', () => {
       const meQuery = `
         query Me {
-          me
+          me {
+            id
+            username
+            email
+            displayName
+            bio
+            avatar
+            createdAt
+            updatedAt
+          }
         }
       `;
 
@@ -324,7 +334,9 @@ describe('Auth E2E Tests', () => {
 
         const { data } = response.body;
         expect(data.me).toBeDefined();
-        expect(data.me).toBe('Hello Auth User!');
+        expect(data.me.username).toBe('authuser');
+        expect(data.me.email).toBe('auth@example.com');
+        expect(data.me.displayName).toBe('Auth User');
       });
 
       it('should fail to access me query without authentication', async () => {
