@@ -5,9 +5,10 @@ import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { CreateUserUseCase } from './use-cases/create-user.use-case';
 import { UsersResolver } from './users.resolver';
+import { FollowsModule } from '../follows/follows.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User]), FollowsModule],
   providers: [
     UsersResolver,
     UsersService,
