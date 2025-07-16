@@ -14,6 +14,7 @@ import { User } from '../users/entity/user.entity';
 import { JwtStrategy } from './strategies/jwt/jwt-strategy';
 import { SecureCookieService } from './services/secure-cookie.service';
 import { FollowsModule } from '../follows/follows.module';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FollowsModule } from '../follows/follows.module';
     TypeOrmModule.forFeature([User]),
     UsersModule,
     FollowsModule,
+    CommonModule,
   ],
   providers: [
     AuthResolver,

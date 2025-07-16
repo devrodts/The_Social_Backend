@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Tweet } from '../entities/tweet.entity';
 import { User } from '../../users/entity/user.entity';
 import { CreateTweetInputDTO } from '../dtos/create-tweet-input.dto';
+import { SanitizationService } from '../../common/services/sanitization.service';
 
 @Injectable()
 export class CreateTweetUseCase {
@@ -12,6 +13,7 @@ export class CreateTweetUseCase {
     private readonly tweetRepository: Repository<Tweet>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly sanitizationService: SanitizationService,
   ) {}
 
   async execute(input: CreateTweetInputDTO, userId: string): Promise<Tweet> {
@@ -24,6 +26,9 @@ export class CreateTweetUseCase {
       throw new BadRequestException('Tweet content cannot exceed 280 characters');
     }
 
+    // Sanitize tweet content to prevent XSS and other attacks
+    const sanitizedContent = this.sanitizationService.sanitizeTweetContent(input.content);
+
     // Check if user exists
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -33,9 +38,9 @@ export class CreateTweetUseCase {
       throw new NotFoundException('User not found');
     }
 
-    // Create tweet
+    // Create tweet with sanitized content
     const tweet = this.tweetRepository.create({
-      content: input.content.trim(),
+      content: sanitizedContent,
       author: user,
     });
 
