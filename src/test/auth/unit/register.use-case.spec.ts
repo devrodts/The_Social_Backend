@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from '../../../../src/modules/users/entity/user.entity';
 import { RegisterInputDTO } from '../../../modules/auth/dtos/register-input.dto';
 import { AuthResponseDTO } from '../../../modules/auth/dtos/auth-response.dto';
+import { SanitizationService } from '../../../../src/modules/common/services/sanitization.service';
 
 describe('RegisterUseCase', () => {
   let useCase: RegisterUseCase;
@@ -75,12 +76,19 @@ describe('RegisterUseCase', () => {
       decode: jest.fn(),
     };
 
+    const mockSanitizationService = {
+      sanitizeUsername: jest.fn((input) => input),
+      sanitizeEmail: jest.fn((input) => input),
+      sanitizeDisplayName: jest.fn((input) => input),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RegisterUseCase,
         { provide: getRepositoryToken(User), useValue: mockUserRepository },
         { provide: HashService, useValue: mockHashService },
         { provide: JwtService, useValue: mockJwtService },
+        { provide: SanitizationService, useValue: mockSanitizationService },
       ],
     }).compile();
 

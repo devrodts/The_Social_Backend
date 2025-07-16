@@ -5,6 +5,7 @@ import { Tweet } from '../../../modules/tweets/entities/tweet.entity';
 import { CreateTweetUseCase } from '../../../modules/tweets/use-cases/create-tweet.use-case';
 import { CreateTweetInputDTO } from '../../../modules/tweets/dtos/create-tweet-input.dto';
 import { User } from '../../../modules/users/entity/user.entity';
+import { SanitizationService } from '../../../modules/common/services/sanitization.service';
 
 describe('CreateTweetUseCase', () => {
   let useCase: CreateTweetUseCase;
@@ -21,6 +22,10 @@ describe('CreateTweetUseCase', () => {
   };
 
   beforeEach(async () => {
+    const mockSanitizationService = {
+      sanitizeTweetContent: jest.fn((input) => input.trim()),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateTweetUseCase,
@@ -31,6 +36,10 @@ describe('CreateTweetUseCase', () => {
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: SanitizationService,
+          useValue: mockSanitizationService,
         },
       ],
     }).compile();
