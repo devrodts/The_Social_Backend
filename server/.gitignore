@@ -16,6 +16,8 @@ test-like-unlike-flow.js
 artifacts_deploy
 artifacts_v0.3
 artifacts_integration
+logs/
+init-db.sql
 # Logs
 logs
 *.log

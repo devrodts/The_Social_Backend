@@ -10,7 +10,6 @@ env:
   NODE_VERSION: '22'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   # Job de testes e análise de código
   test:
