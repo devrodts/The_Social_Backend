@@ -1,0 +1,1222 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "🐦 The Social Network - Twitter Clone API",
+		"description": {
+			"content": "# 🐦 The Social Network - Complete API Documentation\n\nA modern, secure, and scalable Twitter-like social media API built with **NestJS**, **TypeORM**, **GraphQL**, and **PostgreSQL/SQLite**.\n\n## 🚀 Features\n\n### Core Functionality\n- **🔐 Secure Authentication**: JWT-based authentication with refresh tokens\n- **📝 Tweet Management**: Create, read, and manage tweets with real-time counters\n- **❤️ Like System**: Like and unlike tweets with optimized database operations\n- **👥 Follow System**: Follow/unfollow users with relationship management\n- **🔍 User Profiles**: Rich user profiles with bio, avatar, and social metrics\n- **📊 Social Metrics**: Real-time counters for tweets, likes, followers, and following\n\n### Security & Sanitization\n- **🛡️ XSS Protection**: Comprehensive HTML/script tag removal\n- **💉 Injection Prevention**: SQL, NoSQL, and command injection protection\n- **🧹 Input Sanitization**: Context-aware sanitization for all user inputs\n- **🔒 Password Security**: bcrypt hashing with configurable salt rounds\n- **🍪 Secure Cookies**: HttpOnly, Secure, SameSite cookies for JWT storage\n\n## 🔧 Quick Setup\n\n1. **Set Environment Variables**:\n   - `baseUrl`: Your API base URL (default: http://localhost:3000)\n   - `graphqlEndpoint`: GraphQL endpoint (default: /graphql)\n   - `authToken`: Will be set automatically after login\n   - `refreshToken`: Will be set automatically after login\n\n2. **Authentication Flow**:\n   - Register a new user OR\n   - Login with existing credentials\n   - Token will be automatically saved for subsequent requests\n\n3. **Test the API**:\n   - Use the pre-built requests organized by feature\n   - Each request includes comprehensive tests\n   - Response data is automatically validated\n\n## 📡 GraphQL Endpoint\n\nAll requests are sent to the GraphQL endpoint: `{{baseUrl}}{{graphqlEndpoint}}`\n\n## 🔐 Authentication\n\nMost endpoints require authentication. The Bearer token is automatically included in requests after login.\n\n---\n\n**Developer**: Rodolfo Rodrigues  \n**License**: General Public License v3.0  \n**Version**: 1.0.0",
+			"type": "text/markdown"
+		},
+		"version": "1.0.0",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"description": {
+				"content": "# 🔐 Authentication Module\n\nComplete authentication system with JWT tokens, secure registration, login, and token refresh capabilities.\n\n## Features\n- **Secure Registration**: Input sanitization and validation\n- **JWT Authentication**: Access and refresh tokens\n- **Password Security**: bcrypt hashing\n- **XSS Protection**: Comprehensive input sanitization\n\n## Flow\n1. Register or Login to get tokens\n2. Use access token for authenticated requests\n3. Refresh token when access token expires",
+				"type": "text/markdown"
+			},
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Registration-specific tests",
+									"pm.test('Registration should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.register) {",
+									"    const registerData = responseJson.data.register;",
+									"    ",
+									"    pm.test('Should return authentication tokens', () => {",
+									"        pm.expect(registerData.token).to.be.a('string').and.not.empty;",
+									"        pm.expect(registerData.refreshToken).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should return user data', () => {",
+									"        pm.expect(registerData.user).to.be.an('object');",
+									"        pm.expect(registerData.user.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(registerData.user.username).to.be.a('string').and.not.empty;",
+									"        pm.expect(registerData.user.email).to.be.a('string').and.not.empty;",
+									"        pm.expect(registerData.user.displayName).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    // Store tokens and user data for subsequent requests",
+									"    pm.environment.set('authToken', registerData.token);",
+									"    pm.environment.set('refreshToken', registerData.refreshToken);",
+									"    pm.environment.set('testUserId', registerData.user.id);",
+									"    ",
+									"    console.log('✅ Registration successful! Tokens saved.');",
+									"    console.log('👤 User ID:', registerData.user.id);",
+									"    console.log('📧 Email:', registerData.user.email);",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Registration failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation Register($input: RegisterInputDTO!) {\\n  register(input: $input) {\\n    token\\n    refreshToken\\n    user {\\n      id\\n      username\\n      email\\n      displayName\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"input\": {\n      \"username\": \"{{testUsername}}\",\n      \"email\": \"{{testEmail}}\",\n      \"password\": \"securepassword123\",\n      \"displayName\": \"Test User\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Register New User\n\nCreates a new user account with secure password hashing and input sanitization.\n\n### Input Validation\n- **username**: 3-20 characters, alphanumeric + underscore only\n- **email**: Valid email format\n- **password**: Minimum 6 characters\n- **displayName**: Required field\n\n### Security Features\n- bcrypt password hashing\n- XSS protection on all inputs\n- SQL injection prevention\n- Username/email uniqueness validation\n\n### Response\n- JWT access token (expires in 7 days)\n- Refresh token for token renewal\n- User profile data"
+					}
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Login-specific tests",
+									"pm.test('Login should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.login) {",
+									"    const loginData = responseJson.data.login;",
+									"    ",
+									"    pm.test('Should return authentication tokens', () => {",
+									"        pm.expect(loginData.token).to.be.a('string').and.not.empty;",
+									"        pm.expect(loginData.refreshToken).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should return user data', () => {",
+									"        pm.expect(loginData.user).to.be.an('object');",
+									"        pm.expect(loginData.user.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(loginData.user.username).to.be.a('string').and.not.empty;",
+									"        pm.expect(loginData.user.email).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    // Store tokens and user data",
+									"    pm.environment.set('authToken', loginData.token);",
+									"    pm.environment.set('refreshToken', loginData.refreshToken);",
+									"    pm.environment.set('testUserId', loginData.user.id);",
+									"    ",
+									"    console.log('✅ Login successful! Tokens updated.');",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Login failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation Login($input: LoginDTO!) {\\n  login(input: $input) {\\n    token\\n    refreshToken\\n    user {\\n      id\\n      username\\n      email\\n      displayName\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"input\": {\n      \"email\": \"{{testEmail}}\",\n      \"password\": \"securepassword123\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## User Login\n\nAuthenticate existing user with email and password.\n\n### Input Requirements\n- **email**: Valid registered email address\n- **password**: User's password\n\n### Security Features\n- bcrypt password verification\n- Protection against timing attacks\n- Invalid credentials handling\n- JWT token generation\n\n### Response\n- New JWT access token\n- New refresh token\n- User profile data\n\n### Error Handling\n- Invalid credentials return 401 Unauthorized\n- Proper error messages for debugging"
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Refresh token tests",
+									"pm.test('Token refresh should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.refreshToken) {",
+									"    const refreshData = responseJson.data.refreshToken;",
+									"    ",
+									"    pm.test('Should return new tokens', () => {",
+									"        pm.expect(refreshData.token).to.be.a('string').and.not.empty;",
+									"        pm.expect(refreshData.refreshToken).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    // Update stored tokens",
+									"    pm.environment.set('authToken', refreshData.token);",
+									"    pm.environment.set('refreshToken', refreshData.refreshToken);",
+									"    ",
+									"    console.log('✅ Tokens refreshed successfully!');",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Token refresh failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation RefreshToken($input: RefreshTokenDTO!) {\\n  refreshToken(input: $input) {\\n    token\\n    refreshToken\\n  }\\n}\",\n  \"variables\": {\n    \"input\": {\n      \"refreshToken\": \"{{refreshToken}}\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Refresh Authentication Token\n\nExchange a valid refresh token for new access and refresh tokens.\n\n### Usage\n- Use when access token expires\n- Maintains user session without re-login\n- Automatically rotates refresh tokens for security\n\n### Input\n- **refreshToken**: Valid refresh token from login/register\n\n### Security Features\n- Token rotation (new refresh token issued)\n- Refresh token validation\n- Expiration handling\n\n### Response\n- New JWT access token\n- New refresh token\n\n### Error Handling\n- Invalid/expired refresh tokens return appropriate errors\n- Automatic token cleanup on failure"
+					}
+				},
+				{
+					"name": "Get Current User (Me)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Current user tests",
+									"pm.test('Should authenticate user successfully', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.me) {",
+									"    const userData = responseJson.data.me;",
+									"    ",
+									"    pm.test('Should return complete user profile', () => {",
+									"        pm.expect(userData.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(userData.username).to.be.a('string').and.not.empty;",
+									"        pm.expect(userData.email).to.be.a('string').and.not.empty;",
+									"        pm.expect(userData.displayName).to.be.a('string').and.not.empty;",
+									"        pm.expect(userData.createdAt).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should include social metrics', () => {",
+									"        pm.expect(userData.tweetsCount).to.be.a('number');",
+									"        pm.expect(userData.followersCount).to.be.a('number');",
+									"        pm.expect(userData.followingCount).to.be.a('number');",
+									"        pm.expect(userData.likesCount).to.be.a('number');",
+									"        pm.expect(userData.isVerified).to.be.a('boolean');",
+									"    });",
+									"    ",
+									"    console.log('✅ User profile retrieved successfully');",
+									"    console.log('📊 Stats - Tweets:', userData.tweetsCount, 'Followers:', userData.followersCount);",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Failed to get user profile:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query Me {\\n  me {\\n    id\\n    username\\n    email\\n    displayName\\n    bio\\n    avatar\\n    tweetsCount\\n    followersCount\\n    followingCount\\n    likesCount\\n    isVerified\\n    createdAt\\n    updatedAt\\n  }\\n}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Get Current User Profile\n\nRetrieve the complete profile of the authenticated user.\n\n### Authentication Required\n- Valid JWT token in Authorization header\n- Token automatically included from environment\n\n### Response Data\n- **Basic Info**: id, username, email, displayName\n- **Profile**: bio, avatar, verification status\n- **Social Metrics**: tweets, followers, following, likes counts\n- **Timestamps**: createdAt, updatedAt\n\n### Features\n- Real-time computed fields\n- Comprehensive profile data\n- Social metrics calculation\n\n### Use Cases\n- Profile page display\n- User dashboard\n- Authentication verification\n- Social metrics tracking"
+					}
+				}
+			]
+		},
+		{
+			"name": "📝 Tweet Management",
+			"description": {
+				"content": "# 📝 Tweet Management Module\n\nComplete tweet system with creation, retrieval, and content management.\n\n## Features\n- **Tweet Creation**: Secure content posting with sanitization\n- **Content Validation**: 280 character limit enforcement\n- **XSS Protection**: Comprehensive input sanitization\n- **Real-time Metrics**: Automatic like/retweet/comment counters\n- **Rich Associations**: Author and likes data included\n\n## Security\n- Input sanitization prevents XSS attacks\n- Authentication required for creation\n- Content length validation\n- HTML/script tag removal",
+				"type": "text/markdown"
+			},
+			"item": [
+				{
+					"name": "Create Tweet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Tweet creation tests",
+									"pm.test('Tweet creation should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.createTweet) {",
+									"    const tweetData = responseJson.data.createTweet;",
+									"    ",
+									"    pm.test('Should return tweet data', () => {",
+									"        pm.expect(tweetData.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(tweetData.content).to.be.a('string').and.not.empty;",
+									"        pm.expect(tweetData.createdAt).to.be.a('string').and.not.empty;",
+									"        pm.expect(tweetData.authorId).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should include metrics', () => {",
+									"        pm.expect(tweetData.likesCount).to.be.a('number');",
+									"        pm.expect(tweetData.retweetsCount).to.be.a('number');",
+									"        pm.expect(tweetData.commentsCount).to.be.a('number');",
+									"    });",
+									"    ",
+									"    pm.test('Should include author data', () => {",
+									"        pm.expect(tweetData.author).to.be.an('object');",
+									"        pm.expect(tweetData.author.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(tweetData.author.username).to.be.a('string').and.not.empty;",
+									"        pm.expect(tweetData.author.displayName).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    // Store tweet ID for subsequent tests",
+									"    pm.environment.set('testTweetId', tweetData.id);",
+									"    ",
+									"    console.log('✅ Tweet created successfully!');",
+									"    console.log('🐦 Tweet ID:', tweetData.id);",
+									"    console.log('📝 Content:', tweetData.content);",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Tweet creation failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation CreateTweet($input: CreateTweetInputDTO!) {\\n  createTweet(input: $input) {\\n    id\\n    content\\n    likesCount\\n    retweetsCount\\n    commentsCount\\n    createdAt\\n    updatedAt\\n    authorId\\n    author {\\n      id\\n      username\\n      displayName\\n      avatar\\n    }\\n    likes {\\n      id\\n      user {\\n        id\\n        username\\n      }\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"input\": {\n      \"content\": \"This is a test tweet created via Postman! 🚀 #testing #api\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Create New Tweet\n\nCreate a new tweet with content validation and sanitization.\n\n### Authentication Required\n- Valid JWT token in Authorization header\n- User must be authenticated to create tweets\n\n### Input Validation\n- **content**: Required string field\n- **Maximum Length**: 280 characters (Twitter standard)\n- **Minimum Length**: Cannot be empty\n\n### Security Features\n- XSS protection via input sanitization\n- HTML/script tag removal\n- SQL injection prevention\n- Content encoding for safe storage\n\n### Response Data\n- **Tweet Info**: id, content, timestamps\n- **Metrics**: likes, retweets, comments counts (initial: 0)\n- **Author**: Complete author profile\n- **Likes**: Array of like objects (initially empty)\n\n### Use Cases\n- Social media posting\n- Content creation\n- User engagement\n- Timeline population"
+					}
+				},
+				{
+					"name": "Get All Tweets",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get tweets tests",
+									"pm.test('Should retrieve tweets successfully', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.tweets) {",
+									"    const tweetsData = responseJson.data.tweets;",
+									"    ",
+									"    pm.test('Should return array of tweets', () => {",
+									"        pm.expect(tweetsData).to.be.an('array');",
+									"    });",
+									"    ",
+									"    if (tweetsData.length > 0) {",
+									"        const firstTweet = tweetsData[0];",
+									"        ",
+									"        pm.test('Each tweet should have required fields', () => {",
+									"            pm.expect(firstTweet.id).to.be.a('string').and.not.empty;",
+									"            pm.expect(firstTweet.content).to.be.a('string').and.not.empty;",
+									"            pm.expect(firstTweet.createdAt).to.be.a('string').and.not.empty;",
+									"            pm.expect(firstTweet.authorId).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        pm.test('Each tweet should include metrics', () => {",
+									"            pm.expect(firstTweet.likesCount).to.be.a('number');",
+									"            pm.expect(firstTweet.retweetsCount).to.be.a('number');",
+									"            pm.expect(firstTweet.commentsCount).to.be.a('number');",
+									"        });",
+									"        ",
+									"        pm.test('Each tweet should include author', () => {",
+									"            pm.expect(firstTweet.author).to.be.an('object');",
+									"            pm.expect(firstTweet.author.username).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        pm.test('Each tweet should include likes array', () => {",
+									"            pm.expect(firstTweet.likes).to.be.an('array');",
+									"        });",
+									"        ",
+									"        console.log('✅ Retrieved', tweetsData.length, 'tweets successfully');",
+									"        console.log('🐦 Latest tweet:', firstTweet.content.substring(0, 50) + '...');",
+									"    } else {",
+									"        console.log('ℹ️ No tweets found in the system');",
+									"    }",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Failed to retrieve tweets:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetTweets {\\n  tweets {\\n    id\\n    content\\n    likesCount\\n    retweetsCount\\n    commentsCount\\n    createdAt\\n    updatedAt\\n    authorId\\n    author {\\n      id\\n      username\\n      displayName\\n      avatar\\n    }\\n    likes {\\n      id\\n      user {\\n        id\\n        username\\n      }\\n    }\\n  }\\n}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Get All Tweets\n\nRetrieve all tweets in the system with complete data.\n\n### Public Endpoint\n- No authentication required\n- Returns all public tweets\n- Includes complete author and likes data\n\n### Response Data\n- **Array of Tweets**: All tweets in chronological order\n- **Tweet Content**: Full content with sanitized text\n- **Metrics**: Real-time like, retweet, comment counts\n- **Author Data**: Complete profile for each tweet author\n- **Likes Data**: Array of users who liked each tweet\n- **Timestamps**: Creation and update times\n\n### Features\n- Complete timeline view\n- Rich association data\n- Real-time metrics\n- Author profile integration\n\n### Use Cases\n- Timeline/feed display\n- Social media dashboard\n- Content discovery\n- Analytics and reporting\n- Public tweet browsing"
+					}
+				}
+			]
+		},
+		{
+			"name": "❤️ Like System",
+			"description": {
+				"content": "# ❤️ Like System Module\n\nComplete like/unlike functionality for tweets with real-time metrics.\n\n## Features\n- **Like/Unlike Tweets**: Toggle like status on any tweet\n- **Real-time Metrics**: Automatic like count updates\n- **User Like History**: Track user's liked tweets\n- **Like Analytics**: Count and status queries\n- **Duplicate Prevention**: Prevents multiple likes from same user\n\n## Security\n- Authentication required for all operations\n- User can only like/unlike tweets once\n- Automatic cleanup on tweet deletion",
+				"type": "text/markdown"
+			},
+			"item": [
+				{
+					"name": "Like Tweet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Like tweet tests",
+									"pm.test('Tweet like should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.likeTweet) {",
+									"    const likeData = responseJson.data.likeTweet;",
+									"    ",
+									"    pm.test('Should return like data', () => {",
+									"        pm.expect(likeData.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(likeData.userId).to.be.a('string').and.not.empty;",
+									"        pm.expect(likeData.tweetId).to.be.a('string').and.not.empty;",
+									"        pm.expect(likeData.createdAt).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should include user data', () => {",
+									"        pm.expect(likeData.user).to.be.an('object');",
+									"        pm.expect(likeData.user.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(likeData.user.username).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should include tweet data', () => {",
+									"        pm.expect(likeData.tweet).to.be.an('object');",
+									"        pm.expect(likeData.tweet.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(likeData.tweet.content).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    console.log('✅ Tweet liked successfully!');",
+									"    console.log('❤️ Like ID:', likeData.id);",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Like failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation LikeTweet($input: CreateLikeInputDTO!) {\\n  likeTweet(input: $input) {\\n    id\\n    userId\\n    tweetId\\n    createdAt\\n    user {\\n      id\\n      username\\n      displayName\\n    }\\n    tweet {\\n      id\\n      content\\n      likesCount\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"input\": {\n      \"tweetId\": \"{{testTweetId}}\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Like a Tweet\n\nAdd a like to a specific tweet.\n\n### Authentication Required\n- Valid JWT token in Authorization header\n- User must be authenticated to like tweets\n\n### Input\n- **tweetId**: UUID of the tweet to like\n\n### Validation\n- Tweet must exist\n- User cannot like the same tweet twice\n- UUID format validation\n\n### Response Data\n- **Like Info**: id, userId, tweetId, timestamp\n- **User Data**: Complete profile of the user who liked\n- **Tweet Data**: Tweet content and updated like count\n\n### Features\n- Duplicate prevention\n- Real-time like count updates\n- Rich association data\n\n### Use Cases\n- User engagement\n- Social interaction\n- Content popularity tracking"
+					}
+				},
+				{
+					"name": "Unlike Tweet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Unlike tweet tests",
+									"pm.test('Tweet unlike should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.unlikeTweet !== undefined) {",
+									"    const unlikeResult = responseJson.data.unlikeTweet;",
+									"    ",
+									"    pm.test('Should return boolean result', () => {",
+									"        pm.expect(unlikeResult).to.be.a('boolean');",
+									"        pm.expect(unlikeResult).to.be.true;",
+									"    });",
+									"    ",
+									"    console.log('✅ Tweet unliked successfully!');",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Unlike failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation UnlikeTweet($tweetId: ID!) {\\n  unlikeTweet(tweetId: $tweetId)\\n}\",\n  \"variables\": {\n    \"tweetId\": \"{{testTweetId}}\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Unlike a Tweet\n\nRemove a like from a specific tweet.\n\n### Authentication Required\n- Valid JWT token in Authorization header\n- User must be authenticated to unlike tweets\n\n### Input\n- **tweetId**: UUID of the tweet to unlike\n\n### Validation\n- Tweet must exist\n- User must have previously liked the tweet\n- UUID format validation\n\n### Response\n- **Boolean**: true if unlike was successful\n\n### Features\n- Only removes user's own like\n- Real-time like count updates\n- Handles non-existent likes gracefully\n\n### Use Cases\n- User preference changes\n- Social interaction management\n- Content engagement tracking"
+					}
+				},
+				{
+					"name": "Get Tweet Likes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get tweet likes tests",
+									"pm.test('Should retrieve tweet likes successfully', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.tweetLikes) {",
+									"    const likesData = responseJson.data.tweetLikes;",
+									"    ",
+									"    pm.test('Should return array of likes', () => {",
+									"        pm.expect(likesData).to.be.an('array');",
+									"    });",
+									"    ",
+									"    if (likesData.length > 0) {",
+									"        const firstLike = likesData[0];",
+									"        ",
+									"        pm.test('Each like should have required fields', () => {",
+									"            pm.expect(firstLike.id).to.be.a('string').and.not.empty;",
+									"            pm.expect(firstLike.createdAt).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        pm.test('Each like should include user data', () => {",
+									"            pm.expect(firstLike.user).to.be.an('object');",
+									"            pm.expect(firstLike.user.username).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        console.log('✅ Retrieved', likesData.length, 'likes for tweet');",
+									"    } else {",
+									"        console.log('ℹ️ No likes found for this tweet');",
+									"    }",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Failed to retrieve likes:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetTweetLikes($tweetId: ID!, $limit: Int!, $offset: Int!) {\\n  tweetLikes(tweetId: $tweetId, limit: $limit, offset: $offset) {\\n    id\\n    createdAt\\n    user {\\n      id\\n      username\\n      displayName\\n      avatar\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"tweetId\": \"{{testTweetId}}\",\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Get Tweet Likes\n\nRetrieve all likes for a specific tweet with pagination.\n\n### Public Endpoint\n- No authentication required\n- Returns paginated list of likes\n\n### Input Parameters\n- **tweetId**: UUID of the tweet\n- **limit**: Number of likes to return (default: 10)\n- **offset**: Number of likes to skip (default: 0)\n\n### Response Data\n- **Array of Likes**: Paginated like objects\n- **User Data**: Complete profile for each user who liked\n- **Timestamps**: When each like was created\n\n### Features\n- Pagination support\n- Rich user data\n- Chronological ordering\n\n### Use Cases\n- Like list display\n- User engagement analytics\n- Social proof\n- Follower discovery"
+					}
+				},
+				{
+					"name": "Check if Tweet is Liked",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check like status tests",
+									"pm.test('Should check like status successfully', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.isLiked !== undefined) {",
+									"    const isLiked = responseJson.data.isLiked;",
+									"    ",
+									"    pm.test('Should return boolean result', () => {",
+									"        pm.expect(isLiked).to.be.a('boolean');",
+									"    });",
+									"    ",
+									"    console.log('✅ Like status checked:', isLiked ? 'Liked' : 'Not liked');",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Failed to check like status:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query IsLiked($tweetId: ID!) {\\n  isLiked(tweetId: $tweetId)\\n}\",\n  \"variables\": {\n    \"tweetId\": \"{{testTweetId}}\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Check if Tweet is Liked\n\nCheck if the current user has liked a specific tweet.\n\n### Authentication Required\n- Valid JWT token in Authorization header\n- User must be authenticated to check like status\n\n### Input\n- **tweetId**: UUID of the tweet to check\n\n### Response\n- **Boolean**: true if user has liked the tweet, false otherwise\n\n### Features\n- Fast boolean response\n- User-specific check\n- Real-time status\n\n### Use Cases\n- UI state management\n- Like button display\n- User preference tracking\n- Interactive feedback"
+					}
+				}
+			]
+		},
+		{
+			"name": "👥 Follow System",
+			"description": {
+				"content": "# 👥 Follow System Module\n\nComplete user following/unfollowing system with relationship management.\n\n## Features\n- **Follow/Unfollow Users**: Build social connections\n- **Followers List**: See who follows a user\n- **Following List**: See who a user follows\n- **Real-time Metrics**: Automatic follower/following counts\n- **Relationship Management**: Prevent duplicate follows\n\n## Security\n- Authentication required for follow operations\n- Duplicate relationship prevention\n- Self-follow prevention\n- Automatic cleanup on user deletion",
+				"type": "text/markdown"
+			},
+			"item": [
+				{
+					"name": "Follow User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Follow user tests",
+									"pm.test('User follow should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.followUser) {",
+									"    const followData = responseJson.data.followUser;",
+									"    ",
+									"    pm.test('Should return follow relationship', () => {",
+									"        pm.expect(followData.id).to.be.a('string').and.not.empty;",
+									"        pm.expect(followData.followerId).to.be.a('string').and.not.empty;",
+									"        pm.expect(followData.followingId).to.be.a('string').and.not.empty;",
+									"        pm.expect(followData.createdAt).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should include follower data', () => {",
+									"        pm.expect(followData.follower).to.be.an('object');",
+									"        pm.expect(followData.follower.username).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    pm.test('Should include following data', () => {",
+									"        pm.expect(followData.following).to.be.an('object');",
+									"        pm.expect(followData.following.username).to.be.a('string').and.not.empty;",
+									"    });",
+									"    ",
+									"    console.log('✅ User followed successfully!');",
+									"    console.log('👥 Follow ID:', followData.id);",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Follow failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation FollowUser($followingId: String!) {\\n  followUser(followingId: $followingId) {\\n    id\\n    followerId\\n    followingId\\n    createdAt\\n    follower {\\n      id\\n      username\\n      displayName\\n    }\\n    following {\\n      id\\n      username\\n      displayName\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"followingId\": \"{{testUserId}}\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Follow a User\n\nEstablish a following relationship with another user.\n\n### Authentication Required\n- Valid JWT token in Authorization header\n- User must be authenticated to follow others\n\n### Input\n- **followingId**: UUID of the user to follow\n\n### Validation\n- Target user must exist\n- Cannot follow yourself\n- Cannot follow the same user twice\n- UUID format validation\n\n### Response Data\n- **Relationship Info**: id, follower/following IDs, timestamp\n- **Follower Data**: Complete profile of the follower\n- **Following Data**: Complete profile of the user being followed\n\n### Features\n- Duplicate prevention\n- Self-follow prevention\n- Real-time relationship tracking\n- Rich association data\n\n### Use Cases\n- Social networking\n- Content discovery\n- User engagement\n- Network building"
+					}
+				},
+				{
+					"name": "Unfollow User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Unfollow user tests",
+									"pm.test('User unfollow should be successful', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.unfollowUser !== undefined) {",
+									"    const unfollowResult = responseJson.data.unfollowUser;",
+									"    ",
+									"    pm.test('Should return boolean result', () => {",
+									"        pm.expect(unfollowResult).to.be.a('boolean');",
+									"        pm.expect(unfollowResult).to.be.true;",
+									"    });",
+									"    ",
+									"    console.log('✅ User unfollowed successfully!');",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Unfollow failed:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation UnfollowUser($followingId: String!) {\\n  unfollowUser(followingId: $followingId)\\n}\",\n  \"variables\": {\n    \"followingId\": \"{{testUserId}}\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Unfollow a User\n\nRemove a following relationship with another user.\n\n### Authentication Required\n- Valid JWT token in Authorization header\n- User must be authenticated to unfollow others\n\n### Input\n- **followingId**: UUID of the user to unfollow\n\n### Validation\n- Target user must exist\n- Follow relationship must exist\n- UUID format validation\n\n### Response\n- **Boolean**: true if unfollow was successful\n\n### Features\n- Only removes user's own follow relationships\n- Real-time metrics updates\n- Handles non-existent relationships gracefully\n\n### Use Cases\n- Social network management\n- User preference changes\n- Content curation\n- Privacy control"
+					}
+				},
+				{
+					"name": "Get User Followers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get followers tests",
+									"pm.test('Should retrieve followers successfully', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.findFollowers) {",
+									"    const followersData = responseJson.data.findFollowers;",
+									"    ",
+									"    pm.test('Should return array of followers', () => {",
+									"        pm.expect(followersData).to.be.an('array');",
+									"    });",
+									"    ",
+									"    if (followersData.length > 0) {",
+									"        const firstFollower = followersData[0];",
+									"        ",
+									"        pm.test('Each follower should have required fields', () => {",
+									"            pm.expect(firstFollower.id).to.be.a('string').and.not.empty;",
+									"            pm.expect(firstFollower.createdAt).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        pm.test('Each follower should include user data', () => {",
+									"            pm.expect(firstFollower.follower).to.be.an('object');",
+									"            pm.expect(firstFollower.follower.username).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        console.log('✅ Retrieved', followersData.length, 'followers');",
+									"    } else {",
+									"        console.log('ℹ️ No followers found for this user');",
+									"    }",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Failed to retrieve followers:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query FindFollowers($userId: String!, $limit: Float, $offset: Float) {\\n  findFollowers(userId: $userId, limit: $limit, offset: $offset) {\\n    id\\n    createdAt\\n    follower {\\n      id\\n      username\\n      displayName\\n      avatar\\n    }\\n    following {\\n      id\\n      username\\n      displayName\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"userId\": \"{{testUserId}}\",\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Get User Followers\n\nRetrieve all followers for a specific user with pagination.\n\n### Public Endpoint\n- No authentication required\n- Returns paginated list of followers\n\n### Input Parameters\n- **userId**: UUID of the user\n- **limit**: Number of followers to return (optional)\n- **offset**: Number of followers to skip (optional)\n\n### Response Data\n- **Array of Follows**: Paginated follow relationships\n- **Follower Data**: Complete profile for each follower\n- **Following Data**: Target user information\n- **Timestamps**: When each follow relationship was created\n\n### Features\n- Pagination support\n- Rich user data\n- Chronological ordering\n\n### Use Cases\n- Follower list display\n- Social network analysis\n- User discovery\n- Engagement metrics"
+					}
+				},
+				{
+					"name": "Get User Following",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get following tests",
+									"pm.test('Should retrieve following list successfully', () => {",
+									"    pm.expect(pm.response.status).to.equal('OK');",
+									"});",
+									"",
+									"const responseJson = pm.response.json();",
+									"",
+									"if (responseJson.data && responseJson.data.findFollowing) {",
+									"    const followingData = responseJson.data.findFollowing;",
+									"    ",
+									"    pm.test('Should return array of following', () => {",
+									"        pm.expect(followingData).to.be.an('array');",
+									"    });",
+									"    ",
+									"    if (followingData.length > 0) {",
+									"        const firstFollowing = followingData[0];",
+									"        ",
+									"        pm.test('Each following should have required fields', () => {",
+									"            pm.expect(firstFollowing.id).to.be.a('string').and.not.empty;",
+									"            pm.expect(firstFollowing.createdAt).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        pm.test('Each following should include user data', () => {",
+									"            pm.expect(firstFollowing.following).to.be.an('object');",
+									"            pm.expect(firstFollowing.following.username).to.be.a('string').and.not.empty;",
+									"        });",
+									"        ",
+									"        console.log('✅ Retrieved', followingData.length, 'following');",
+									"    } else {",
+									"        console.log('ℹ️ User is not following anyone');",
+									"    }",
+									"} else if (responseJson.errors) {",
+									"    console.log('❌ Failed to retrieve following:', responseJson.errors[0].message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query FindFollowing($userId: String!, $limit: Float, $offset: Float) {\\n  findFollowing(userId: $userId, limit: $limit, offset: $offset) {\\n    id\\n    createdAt\\n    follower {\\n      id\\n      username\\n      displayName\\n    }\\n    following {\\n      id\\n      username\\n      displayName\\n      avatar\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"userId\": \"{{testUserId}}\",\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{graphqlEndpoint}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"{{graphqlEndpoint}}"
+							]
+						},
+						"description": "## Get User Following\n\nRetrieve all users that a specific user is following with pagination.\n\n### Public Endpoint\n- No authentication required\n- Returns paginated list of following relationships\n\n### Input Parameters\n- **userId**: UUID of the user\n- **limit**: Number of following to return (optional)\n- **offset**: Number of following to skip (optional)\n\n### Response Data\n- **Array of Follows**: Paginated follow relationships\n- **Follower Data**: User who is following\n- **Following Data**: Complete profile for each user being followed\n- **Timestamps**: When each follow relationship was created\n\n### Features\n- Pagination support\n- Rich user data\n- Chronological ordering\n\n### Use Cases\n- Following list display\n- Content curation insights\n- User interests analysis\n- Social network mapping"
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"console.log('🚀 Executing request to:', pm.request.url);",
+					"",
+					"// Auto-set Content-Type for GraphQL",
+					"pm.request.headers.add({",
+					"    key: 'Content-Type',",
+					"    value: 'application/json'",
+					"});",
+					"",
+					"// Auto-add Authorization header if token exists",
+					"const authToken = pm.environment.get('authToken') || pm.globals.get('authToken');",
+					"if (authToken && !pm.request.headers.has('Authorization')) {",
+					"    pm.request.headers.add({",
+					"        key: 'Authorization',",
+					"        value: 'Bearer ' + authToken",
+					"    });",
+					"    console.log('🔑 Authorization header added');",
+					"}",
+					"",
+					"// Log request details",
+					"console.log('📤 Request Method:', pm.request.method);",
+					"console.log('📋 Request Body:', pm.request.body ? pm.request.body.raw : 'No body');"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"console.log('📥 Response Status:', pm.response.status);",
+					"console.log('⏱️ Response Time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Basic response validation",
+					"pm.test('Response status should be 200', () => {",
+					"    pm.expect(pm.response.status).to.equal('OK');",
+					"});",
+					"",
+					"pm.test('Response time should be acceptable', () => {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// GraphQL specific validations",
+					"if (pm.response.headers.get('Content-Type')?.includes('application/json')) {",
+					"    try {",
+					"        const responseJson = pm.response.json();",
+					"        ",
+					"        // Check for GraphQL errors",
+					"        if (responseJson.errors) {",
+					"            console.log('❌ GraphQL Errors:', JSON.stringify(responseJson.errors, null, 2));",
+					"            pm.test('Should not have GraphQL errors', () => {",
+					"                pm.expect(responseJson.errors).to.be.undefined;",
+					"            });",
+					"        } else {",
+					"            console.log('✅ No GraphQL errors');",
+					"        }",
+					"        ",
+					"        // Validate data structure",
+					"        if (responseJson.data) {",
+					"            pm.test('Response should have data', () => {",
+					"                pm.expect(responseJson.data).to.be.an('object');",
+					"            });",
+					"            console.log('📊 Response Data Keys:', Object.keys(responseJson.data));",
+					"        }",
+					"    } catch (e) {",
+					"        console.log('⚠️ Failed to parse JSON response:', e.message);",
+					"    }",
+					"}",
+					"",
+					"console.log('✅ Global tests completed');"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string",
+			"description": "Base URL for the API server"
+		},
+		{
+			"key": "graphqlEndpoint",
+			"value": "/graphql",
+			"type": "string",
+			"description": "GraphQL endpoint path"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string",
+			"description": "JWT access token (set automatically after login)"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string",
+			"description": "JWT refresh token (set automatically after login)"
+		},
+		{
+			"key": "testUserId",
+			"value": "",
+			"type": "string",
+			"description": "User ID for testing (set automatically)"
+		},
+		{
+			"key": "testTweetId",
+			"value": "",
+			"type": "string",
+			"description": "Tweet ID for testing (set automatically)"
+		},
+		{
+			"key": "testUsername",
+			"value": "testuser_123",
+			"type": "string",
+			"description": "Test username for API testing"
+		},
+		{
+			"key": "testEmail",
+			"value": "test_123@example.com",
+			"type": "string",
+			"description": "Test email for API testing"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	}
+} 
