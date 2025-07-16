@@ -45,65 +45,50 @@ describe('FindFollowingUseCase', () => {
   });
 
   describe('execute', () => {
-    it('should return users that a user follows', async () => {
-      const userId = 'user-id';
-      const mockUser = { id: userId, username: 'user' } as User;
-      const mockFollowing = [
-        {
-          id: 'follow-id-1',
-          follower: mockUser,
-          following: { id: 'following-1', username: 'following1' } as User,
-          createdAt: new Date(),
-        },
-        {
-          id: 'follow-id-2',
-          follower: mockUser,
-          following: { id: 'following-2', username: 'following2' } as User,
-          createdAt: new Date(),
-        },
-      ] as Follow[];
-
-      mockUserRepository.findOne.mockResolvedValue(mockUser);
-      mockFollowRepository.findByFollower.mockResolvedValue(mockFollowing);
-
-      const result = await useCase.execute(userId);
-
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
-      expect(mockFollowRepository.findByFollower).toHaveBeenCalledWith(userId, undefined, undefined);
-      expect(result).toEqual(mockFollowing);
-    });
-
-    it('should return following with pagination', async () => {
+    it('should find following successfully', async () => {
       const userId = 'user-id';
       const limit = 10;
-      const offset = 5;
+      const offset = 0;
       const mockUser = { id: userId, username: 'user' } as User;
-      const mockFollowing = [
-        {
-          id: 'follow-id-1',
-          follower: mockUser,
-          following: { id: 'following-1', username: 'following1' } as User,
-          createdAt: new Date(),
-        },
-      ] as Follow[];
+      const mockFollows = [
+        { id: 'follow-1', followerId: userId, followingId: 'following-1' } as Follow,
+        { id: 'follow-2', followerId: userId, followingId: 'following-2' } as Follow,
+      ];
 
       mockUserRepository.findOne.mockResolvedValue(mockUser);
-      mockFollowRepository.findByFollower.mockResolvedValue(mockFollowing);
+      mockFollowRepository.findByFollower.mockResolvedValue(mockFollows);
 
       const result = await useCase.execute(userId, limit, offset);
 
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
       expect(mockFollowRepository.findByFollower).toHaveBeenCalledWith(userId, limit, offset);
-      expect(result).toEqual(mockFollowing);
+      expect(result).toEqual(mockFollows);
+    });
+
+    it('should find following with default pagination', async () => {
+      const userId = 'user-id';
+      const mockUser = { id: userId, username: 'user' } as User;
+      const mockFollows = [
+        { id: 'follow-1', followerId: userId, followingId: 'following-1' } as Follow,
+      ];
+
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockFollowRepository.findByFollower.mockResolvedValue(mockFollows);
+
+      const result = await useCase.execute(userId);
+
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
+      expect(mockFollowRepository.findByFollower).toHaveBeenCalledWith(userId, undefined, undefined);
+      expect(result).toEqual(mockFollows);
     });
 
     it('should return empty array when user follows no one', async () => {
       const userId = 'user-id';
       const mockUser = { id: userId, username: 'user' } as User;
-      const mockFollowing: Follow[] = [];
+      const mockFollows: Follow[] = [];
 
       mockUserRepository.findOne.mockResolvedValue(mockUser);
-      mockFollowRepository.findByFollower.mockResolvedValue(mockFollowing);
+      mockFollowRepository.findByFollower.mockResolvedValue(mockFollows);
 
       const result = await useCase.execute(userId);
 
@@ -117,7 +102,9 @@ describe('FindFollowingUseCase', () => {
 
       mockUserRepository.findOne.mockResolvedValue(null);
 
-      await expect(useCase.execute(userId)).rejects.toThrow(NotFoundException);
+      await expect(useCase.execute(userId)).rejects.toThrow(
+        new NotFoundException('User not found')
+      );
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
       expect(mockFollowRepository.findByFollower).not.toHaveBeenCalled();
     });

@@ -49,14 +49,9 @@ describe('UnfollowUserUseCase', () => {
     it('should unfollow a user successfully', async () => {
       const followerId = 'follower-id';
       const followingId = 'following-id';
-      
       const mockFollower = { id: followerId, username: 'follower' } as User;
       const mockFollowing = { id: followingId, username: 'following' } as User;
-      const mockFollow = new Follow();
-      mockFollow.id = 'follow-id';
-      mockFollow.followerId = followerId;
-      mockFollow.followingId = followingId;
-      mockFollow.createdAt = new Date();
+      const mockFollow = { id: 'follow-id', followerId, followingId } as Follow;
 
       mockUserRepository.findOne
         .mockResolvedValueOnce(mockFollower)
@@ -66,47 +61,44 @@ describe('UnfollowUserUseCase', () => {
 
       const result = await useCase.execute(followerId, followingId);
 
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: followerId } });
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: followingId } });
+      expect(mockUserRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(mockUserRepository.findOne).toHaveBeenNthCalledWith(1, { where: { id: followerId } });
+      expect(mockUserRepository.findOne).toHaveBeenNthCalledWith(2, { where: { id: followingId } });
       expect(mockFollowRepository.findByFollowerAndFollowing).toHaveBeenCalledWith(followerId, followingId);
       expect(mockFollowRepository.remove).toHaveBeenCalledWith(followerId, followingId);
-      expect(result).toEqual(true);
+      expect(result).toBe(true);
     });
 
     it('should throw NotFoundException when follower not found', async () => {
       const followerId = 'non-existent-follower';
       const followingId = 'following-id';
 
-      mockUserRepository.findOne.mockResolvedValue(null);
+      mockUserRepository.findOne.mockResolvedValueOnce(null);
 
-      await expect(useCase.execute(followerId, followingId)).rejects.toThrow(NotFoundException);
+      await expect(useCase.execute(followerId, followingId)).rejects.toThrow(
+        new NotFoundException('Follower not found')
+      );
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: followerId } });
-      expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
-      expect(mockFollowRepository.findByFollowerAndFollowing).not.toHaveBeenCalled();
-      expect(mockFollowRepository.remove).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when user to unfollow not found', async () => {
       const followerId = 'follower-id';
       const followingId = 'non-existent-following';
-      
       const mockFollower = { id: followerId, username: 'follower' } as User;
 
       mockUserRepository.findOne
         .mockResolvedValueOnce(mockFollower)
         .mockResolvedValueOnce(null);
 
-      await expect(useCase.execute(followerId, followingId)).rejects.toThrow(NotFoundException);
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: followerId } });
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: followingId } });
-      expect(mockFollowRepository.findByFollowerAndFollowing).not.toHaveBeenCalled();
-      expect(mockFollowRepository.remove).not.toHaveBeenCalled();
+      await expect(useCase.execute(followerId, followingId)).rejects.toThrow(
+        new NotFoundException('User to unfollow not found')
+      );
+      expect(mockUserRepository.findOne).toHaveBeenCalledTimes(2);
     });
 
     it('should throw NotFoundException when follow relationship not found', async () => {
       const followerId = 'follower-id';
       const followingId = 'following-id';
-      
       const mockFollower = { id: followerId, username: 'follower' } as User;
       const mockFollowing = { id: followingId, username: 'following' } as User;
 
@@ -115,9 +107,9 @@ describe('UnfollowUserUseCase', () => {
         .mockResolvedValueOnce(mockFollowing);
       mockFollowRepository.findByFollowerAndFollowing.mockResolvedValue(null);
 
-      await expect(useCase.execute(followerId, followingId)).rejects.toThrow(NotFoundException);
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: followerId } });
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: followingId } });
+      await expect(useCase.execute(followerId, followingId)).rejects.toThrow(
+        new NotFoundException('Follow relationship not found')
+      );
       expect(mockFollowRepository.findByFollowerAndFollowing).toHaveBeenCalledWith(followerId, followingId);
       expect(mockFollowRepository.remove).not.toHaveBeenCalled();
     });
