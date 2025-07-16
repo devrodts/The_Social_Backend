@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../../../../src/app.module';
+import { AppModule } from '../../../app.module';
 
 describe('Me Query (integration)', () => {
   let app: INestApplication;

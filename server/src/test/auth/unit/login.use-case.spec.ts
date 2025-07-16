@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
-import { LoginUseCase } from '../../../../src/modules/auth/use-cases/login.use-case';
-import { HashService } from '../../../../src/modules/auth/services/hash.service';
-import { JwtService } from '../../../../src/modules/auth/services/jwt.service';
+import { LoginUseCase } from '../../../modules/auth/use-cases/login.use-case';
+import { HashService } from '../../../modules/auth/services/hash.service';
+import { JwtService } from '../../../modules/auth/services/jwt.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../../../../src/modules/users/entity/user.entity';
+import { User } from '../../../modules/users/entity/user.entity';
 import { LoginDTO } from '../../../modules/auth/dtos/login.dto';
 import { AuthResponseDTO } from '../../../modules/auth/dtos/auth-response.dto';
 
