@@ -3,22 +3,27 @@ import { UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { RegisterUserDTO } from './dtos/create-user/create-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Tweet } from '../tweets/entities/tweet.entity';
+import { Follow } from '../follows/entities/follow.entity';
+import { Like } from '../likes/entities/like.entity';
 
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-// import { TweetsService } from '@/tweets/tweets.service';
-// import { FollowsService } from '@/follows/follows.service';
 
 
 @Resolver(() => User)
 export class UsersResolver {
 
   constructor(
-
     private readonly usersService: UsersService,
-    // private readonly tweetsService: TweetsService,
-    // private readonly followsService: FollowsService,
-
+    @InjectRepository(Tweet)
+    private readonly tweetRepository: Repository<Tweet>,
+    @InjectRepository(Follow)
+    private readonly followRepository: Repository<Follow>,
+    @InjectRepository(Like)
+    private readonly likeRepository: Repository<Like>,
   ) {}
 
   @Query(() => User, { nullable: true })
@@ -49,18 +54,29 @@ export class UsersResolver {
   }
 
   // Resolve computed fields
-  // @ResolveField(() => Int)
-  // async tweetsCount(@Parent() user: User): Promise<number> {
-  //   return await this.tweetsService.countByUser(user.id);
-  // }
+  @ResolveField(() => Int)
+  async tweetsCount(@Parent() user: User): Promise<number> {
+    return await this.tweetRepository.count({ where: { authorId: user.id } });
+  }
 
-  // @ResolveField(() => Int)
-  // async followingCount(@Parent() user: User): Promise<number> {
-  //   return await this.followsService.countFollowing(user.id);
-  // }
+  @ResolveField(() => Int)
+  async followingCount(@Parent() user: User): Promise<number> {
+    return await this.followRepository.count({ where: { followerId: user.id } });
+  }
 
-  // @ResolveField(() => Int)
-  // async followersCount(@Parent() user: User): Promise<number> {
-  //   return await this.followsService.countFollowers(user.id);
-  // }
+  @ResolveField(() => Int)
+  async followersCount(@Parent() user: User): Promise<number> {
+    return await this.followRepository.count({ where: { followingId: user.id } });
+  }
+
+  @ResolveField(() => Int)
+  async likesCount(@Parent() user: User): Promise<number> {
+    return await this.likeRepository.count({ where: { userId: user.id } });
+  }
+
+  @ResolveField(() => Boolean)
+  async isVerified(@Parent() user: User): Promise<boolean> {
+    // For now, return false. This can be expanded later with verification logic
+    return false;
+  }
 }
