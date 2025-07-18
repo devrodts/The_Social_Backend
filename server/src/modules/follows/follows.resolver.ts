@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Query, Args } from '@nestjs/graphql';
+import { Resolver, Mutation, Query, Args, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { FollowUserUseCase } from './use-cases/follow-user.use-case';
 import { UnfollowUserUseCase } from './use-cases/unfollow-user.use-case';
@@ -39,8 +39,8 @@ export class FollowsResolver {
   @Query(() => [Follow])
   async findFollowers(
     @Args('userId') userId: string,
-    @Args('limit', { nullable: true }) limit?: number,
-    @Args('offset', { nullable: true }) offset?: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
   ): Promise<Follow[]> {
     return await this.findFollowersUseCase.execute(userId, limit, offset);
   }
@@ -48,8 +48,8 @@ export class FollowsResolver {
   @Query(() => [Follow])
   async findFollowing(
     @Args('userId') userId: string,
-    @Args('limit', { nullable: true }) limit?: number,
-    @Args('offset', { nullable: true }) offset?: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
   ): Promise<Follow[]> {
     return await this.findFollowingUseCase.execute(userId, limit, offset);
   }

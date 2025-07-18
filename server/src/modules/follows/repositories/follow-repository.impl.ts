@@ -23,7 +23,13 @@ export class FollowRepositoryImpl implements FollowRepository {
       followerId: followerId,
       followingId: followingId,
     });
-    return await this.repository.save(follow);
+    const savedFollow = await this.repository.save(follow);
+    
+    // Reload with relations to avoid null field errors
+    return await this.repository.findOne({
+      where: { id: savedFollow.id },
+      relations: ['follower', 'following'],
+    }) as Follow;
   }
 
   async remove(followerId: string, followingId: string): Promise<boolean> {
