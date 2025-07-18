@@ -23,7 +23,13 @@ export class LikeRepositoryImpl implements LikeRepository {
       userId: userId,
       tweetId: tweetId,
     });
-    return await this.repository.save(like);
+    const savedLike = await this.repository.save(like);
+    
+    // Reload with relations to avoid empty responses
+    return await this.repository.findOne({
+      where: { id: savedLike.id },
+      relations: ['user', 'tweet', 'tweet.author'],
+    }) as Like;
   }
 
   async remove(userId: string, tweetId: string): Promise<boolean> {
